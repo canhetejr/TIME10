@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { GameScreen, LevelConfig, LevelProgress, MilestoneChest, PlayerState, ShopItem } from './types';
 import { INITIAL_LEVELS } from './data/gameData';
 import { HeaderHUD } from './components/HeaderHUD';
@@ -301,91 +302,146 @@ export default function App() {
       )}
 
       {/* Main Game Screen Router */}
-      <main className="flex-1 flex flex-col items-center justify-start w-full">
-        {currentScreen === 'splash' && (
-          <SplashScreen
-            onStartGame={handleStartGameFromSplash}
-            defaultName={player.name}
-          />
-        )}
+      <main className="flex-1 flex flex-col items-center justify-start w-full relative">
+        <AnimatePresence mode="wait">
+          {currentScreen === 'splash' && (
+            <motion.div
+              key="splash"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="w-full flex-1 flex flex-col items-center justify-center"
+            >
+              <SplashScreen
+                onStartGame={handleStartGameFromSplash}
+                defaultName={player.name}
+              />
+            </motion.div>
+          )}
 
-        {currentScreen === 'map' && (
-          <MapScreen
-            levels={INITIAL_LEVELS}
-            player={player}
-            onSelectLevel={handleSelectLevel}
-            onResetProgress={handleResetProgress}
-            onClaimChest={handleClaimMilestoneChest}
-          />
-        )}
+          {currentScreen === 'map' && (
+            <motion.div
+              key="map"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.25 }}
+              className="w-full flex-1 flex flex-col items-center"
+            >
+              <MapScreen
+                levels={INITIAL_LEVELS}
+                player={player}
+                onSelectLevel={handleSelectLevel}
+                onResetProgress={handleResetProgress}
+                onClaimChest={handleClaimMilestoneChest}
+              />
+            </motion.div>
+          )}
 
-        {currentScreen === 'quiz' && activeLevel && (
-          <QuizGame
-            level={activeLevel}
-            onFinishGame={handleFinishMinigame}
-            onExit={handleBackToMap}
-          />
-        )}
+          {currentScreen === 'quiz' && activeLevel && (
+            <motion.div
+              key={`quiz-${activeLevel.id}`}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="w-full flex-1 flex flex-col items-center"
+            >
+              <QuizGame
+                level={activeLevel}
+                onFinishGame={handleFinishMinigame}
+                onExit={handleBackToMap}
+              />
+            </motion.div>
+          )}
 
-        {currentScreen === 'match3' && activeLevel && (
-          <Match3Game
-            level={activeLevel}
-            onFinishGame={handleFinishMinigame}
-            onExit={handleBackToMap}
-          />
-        )}
+          {currentScreen === 'match3' && activeLevel && (
+            <motion.div
+              key={`match3-${activeLevel.id}`}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="w-full flex-1 flex flex-col items-center"
+            >
+              <Match3Game
+                level={activeLevel}
+                onFinishGame={handleFinishMinigame}
+                onExit={handleBackToMap}
+              />
+            </motion.div>
+          )}
 
-        {currentScreen === 'slot' && activeLevel && (
-          <SlotMachineGame
-            level={activeLevel}
-            onFinishGame={handleFinishMinigame}
-            onExit={handleBackToMap}
-          />
-        )}
+          {currentScreen === 'slot' && activeLevel && (
+            <motion.div
+              key={`slot-${activeLevel.id}`}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="w-full flex-1 flex flex-col items-center"
+            >
+              <SlotMachineGame
+                level={activeLevel}
+                onFinishGame={handleFinishMinigame}
+                onExit={handleBackToMap}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Toast Feedback Overlay */}
       <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
 
       {/* Level Briefing Modal */}
-      {isLevelModalOpen && activeLevel && (
-        <LevelModal
-          level={activeLevel}
-          progress={player.levels[activeLevel.id]}
-          onStart={handleStartMinigame}
-          onClose={() => setIsLevelModalOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isLevelModalOpen && activeLevel && (
+          <LevelModal
+            level={activeLevel}
+            progress={player.levels[activeLevel.id]}
+            onStart={handleStartMinigame}
+            onClose={() => setIsLevelModalOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Result Victory/Defeat Modal */}
-      {isResultModalOpen && activeLevel && lastResult && (
-        <ResultModal
-          level={activeLevel}
-          result={lastResult}
-          hasNextLevel={INITIAL_LEVELS.some((l) => l.id === activeLevel.id + 1)}
-          onNextLevel={handleNextLevel}
-          onReplay={handleReplayCurrentLevel}
-          onBackToMap={handleBackToMap}
-        />
-      )}
+      <AnimatePresence>
+        {isResultModalOpen && activeLevel && lastResult && (
+          <ResultModal
+            level={activeLevel}
+            result={lastResult}
+            hasNextLevel={INITIAL_LEVELS.some((l) => l.id === activeLevel.id + 1)}
+            onNextLevel={handleNextLevel}
+            onReplay={handleReplayCurrentLevel}
+            onBackToMap={handleBackToMap}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Shop Modal */}
-      {isShopOpen && (
-        <ShopModal
-          player={player}
-          onBuyItem={handleBuyShopItem}
-          onEquipItem={handleEquipShopItem}
-          onClose={() => setIsShopOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isShopOpen && (
+          <ShopModal
+            player={player}
+            onBuyItem={handleBuyShopItem}
+            onEquipItem={handleEquipShopItem}
+            onClose={() => setIsShopOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Ranking Modal */}
-      {isRankingOpen && (
-        <RankingModal
-          player={player}
-          onClose={() => setIsRankingOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isRankingOpen && (
+          <RankingModal
+            player={player}
+            onClose={() => setIsRankingOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { LevelConfig } from '../../types';
 import { MATCH3_ITEMS } from '../../data/gameData';
 import { sound } from '../../utils/sound';
 import { GameStar, Match3ItemBadge } from '../GameIcons';
-import { ArrowLeft, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Lightbulb, Flame, Sparkles } from 'lucide-react';
 
 interface Match3GameProps {
   level: LevelConfig;
@@ -207,7 +208,7 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
     );
     setBoard(markedBoard);
 
-    await new Promise((res) => setTimeout(res, 200));
+    await new Promise((res) => setTimeout(res, 220));
 
     const newBoard: Tile[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
 
@@ -245,7 +246,7 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
     }
 
     setBoard(newBoard);
-    await new Promise((res) => setTimeout(res, 200));
+    await new Promise((res) => setTimeout(res, 220));
 
     processBoardMatches(newBoard, newCombo);
   };
@@ -271,7 +272,7 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
     } else {
       sound.playWrong();
       setBoard(testBoard);
-      await new Promise((res) => setTimeout(res, 200));
+      await new Promise((res) => setTimeout(res, 220));
 
       const revertedBoard = testBoard.map((row) => row.map((t) => ({ ...t })));
       revertedBoard[r1][c1].itemId = tempItem;
@@ -376,50 +377,50 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
   const scorePercent = Math.min(100, (score / star3) * 100);
 
   return (
-    <div className="relative min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start p-3 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950">
+    <div className="relative min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start p-3 bg-slate-950 text-slate-100">
       <div className="w-full max-w-sm sm:max-w-md mx-auto flex flex-col items-center">
         {/* Compact HUD with Exit & Hint */}
-        <div className="w-full bg-slate-900/90 border border-indigo-500/30 rounded-2xl px-3 py-2 shadow-lg mb-2 flex items-center justify-between gap-2">
+        <div className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 shadow-sm mb-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleConfirmExit}
-              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all cursor-pointer"
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-400 hover:text-white transition-all cursor-pointer"
               title="Sair para o Mapa"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
-            <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800 font-mono text-xs">
+            <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800 font-mono text-xs">
               <span className="text-slate-400">Jogadas:</span>
-              <strong className={`text-sm font-black ${movesLeft <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-300'}`}>
+              <strong className={`text-xs font-bold ${movesLeft <= 3 ? 'text-rose-400' : 'text-amber-400'}`}>
                 {movesLeft}
               </strong>
             </div>
           </div>
 
-          <div className="flex-1 px-1 text-center">
+          <div className="flex-1 px-2 text-center">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-0.5">
               <span>{score} pts</span>
               <span className="text-emerald-400 font-mono">Meta: {targetScore}</span>
             </div>
             <div className="w-full bg-slate-950 rounded-full h-2 p-0.5 border border-slate-800 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-teal-400 to-amber-400 h-full rounded-full transition-all duration-300"
+                className="bg-emerald-500 h-full rounded-full transition-all duration-300"
                 style={{ width: `${scorePercent}%` }}
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={triggerManualHint}
               disabled={isProcessing}
-              className="p-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 border border-amber-500/40 transition-all cursor-pointer"
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition-all cursor-pointer"
               title="Pedir Dica de Combinação"
             >
               <Lightbulb className="w-3.5 h-3.5" />
             </button>
 
-            <div className="flex items-center gap-0.5 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800">
+            <div className="flex items-center gap-0.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
               {[1, 2, 3].map((starNum) => (
                 <GameStar key={starNum} filled={starNum <= currentStars} size="xs" />
               ))}
@@ -428,15 +429,23 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
         </div>
 
         {/* Combo Pill */}
-        {comboCount > 1 && (
-          <div className="mb-2 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider animate-bounce">
-            COMBO x{comboCount}!
-          </div>
-        )}
+        <AnimatePresence>
+          {comboCount > 1 && (
+            <motion.div
+              initial={{ scale: 0, y: -5 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0 }}
+              className="mb-2 px-3 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-400 font-bold text-xs flex items-center gap-1"
+            >
+              <Flame className="w-3.5 h-3.5 fill-current" />
+              <span>Combo x{comboCount}!</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Board Grid */}
-        <div className="relative bg-slate-900/90 border-2 border-indigo-600/50 rounded-2xl p-2 shadow-xl aspect-square w-full max-w-[320px] sm:max-w-[360px] flex items-center justify-center touch-none select-none">
-          <div className="grid grid-cols-6 gap-1 w-full h-full">
+        <div className="relative bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-sm aspect-square w-full max-w-[320px] sm:max-w-[360px] flex items-center justify-center touch-none select-none">
+          <div className="grid grid-cols-6 gap-1.5 w-full h-full">
             {board.map((row, r) =>
               row.map((tile, c) => {
                 const isSelected = selectedTile?.row === r && selectedTile?.col === c;
@@ -445,21 +454,25 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
                   (hintTiles?.r2 === r && hintTiles?.c2 === c);
 
                 return (
-                  <button
+                  <motion.button
                     key={tile.id}
+                    layout
+                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleTileClick(r, c)}
                     onTouchStart={(e) => handleTouchStart(r, c, e)}
                     onTouchEnd={handleTouchEnd}
-                    className={`relative w-full h-full rounded-xl flex items-center justify-center p-0.5 transition-all cursor-pointer select-none ${
+                    className={`relative w-full h-full rounded-xl flex items-center justify-center p-0.5 cursor-pointer select-none transition-all ${
                       isSelected
-                        ? 'ring-2 ring-white scale-105 z-20 shadow-md'
+                        ? 'ring-2 ring-amber-400 scale-105 z-20 bg-slate-800'
                         : isHinted
-                        ? 'ring-2 ring-yellow-400 animate-pulse z-10'
-                        : 'active:scale-95'
+                        ? 'ring-2 ring-amber-400/60 z-10'
+                        : ''
                     } ${tile.isMatched ? 'scale-0 opacity-0 transition-transform duration-200' : ''}`}
                   >
-                    <Match3ItemBadge itemId={tile.itemId} isSelected={isSelected} />
-                  </button>
+                    <Match3ItemBadge itemId={tile.itemId} />
+                  </motion.button>
                 );
               })
             )}
@@ -469,7 +482,7 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
           {floatingPoints.map((fp) => (
             <div
               key={fp.id}
-              className="absolute pointer-events-none text-xs sm:text-sm font-black text-amber-300 font-mono animate-float-up z-30 drop-shadow"
+              className="absolute pointer-events-none text-xs font-bold text-amber-400 font-mono animate-float-up z-30"
               style={{
                 top: `${(fp.row / GRID_SIZE) * 100 + 4}%`,
                 left: `${(fp.col / GRID_SIZE) * 100 + 4}%`,
@@ -480,8 +493,8 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
           ))}
         </div>
 
-        <p className="mt-2.5 text-[11px] text-slate-400 text-center font-medium">
-          💡 Toque em 2 itens ou arraste com o dedo para combinar 3 iguais.
+        <p className="mt-2.5 text-xs text-slate-500 text-center font-normal">
+          Toque em 2 itens vizinhos ou deslize para alinhar 3 símbolos iguais.
         </p>
       </div>
     </div>

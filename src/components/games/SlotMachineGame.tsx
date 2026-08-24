@@ -138,10 +138,10 @@ export const SlotMachineGame: React.FC<SlotMachineGameProps> = ({ level, onFinis
   }, [spinsLeft, isSpinning, totalWon, targetMoEdu, level.rewardMoEdu, onFinishGame]);
 
   return (
-    <div className="relative min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start p-3 bg-gradient-to-b from-slate-950 via-amber-950/30 to-slate-950">
+    <div className="relative min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start p-3 bg-slate-950 text-slate-100">
       <div className="w-full max-w-sm sm:max-w-md mx-auto flex flex-col items-center">
         {/* Compact Status Header */}
-        <div className="w-full bg-slate-900/90 border border-amber-500/30 rounded-2xl px-3 py-2 shadow-lg mb-3 flex items-center justify-between gap-2">
+        <div className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 shadow-sm mb-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleConfirmExit}
@@ -150,80 +150,78 @@ export const SlotMachineGame: React.FC<SlotMachineGameProps> = ({ level, onFinis
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
-            <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 font-mono text-xs">
+            <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono text-xs">
               <span className="text-slate-400">Giros:</span>
-              <strong className={`font-black ${spinsLeft <= 1 ? 'text-rose-400 animate-pulse' : 'text-amber-300'}`}>
+              <strong className={`font-bold ${spinsLeft <= 1 ? 'text-rose-400' : 'text-amber-400'}`}>
                 {spinsLeft}/{maxSpins}
               </strong>
             </div>
           </div>
 
           <div className="text-center">
-            <span className="text-[9px] uppercase font-bold text-slate-400 block leading-none">Prêmio Total</span>
-            <div className="flex items-center justify-center gap-1 text-base font-black text-yellow-300 font-mono">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block leading-none">Prêmio Total</span>
+            <div className="flex items-center justify-center gap-1 text-sm font-bold text-amber-400 font-mono">
               <span>+{totalWon}</span>
               <MoEduCoin size="xs" />
             </div>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 font-mono text-xs">
+          <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono text-xs">
             <span className="text-slate-400">Meta:</span>
-            <strong className="text-emerald-400 font-black">{targetMoEdu}</strong>
+            <strong className="text-emerald-400 font-bold">{targetMoEdu}</strong>
           </div>
         </div>
 
-        {/* Golden Machine Cabinet */}
-        <div className="w-full bg-gradient-to-b from-amber-600 via-yellow-500 to-amber-700 p-2.5 rounded-3xl shadow-xl border-2 border-yellow-200">
+        {/* Tactile Slot Cabinet */}
+        <div className="w-full bg-slate-900 p-3 rounded-2xl shadow-sm border border-slate-800">
           {/* Header */}
-          <div className="w-full py-1.5 bg-red-800 rounded-xl border border-yellow-300 flex items-center justify-center gap-1.5 mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-spin" />
-            <h3 className="text-xs sm:text-sm font-black text-yellow-100 font-['Fredoka',sans-serif] uppercase">
-              GIRO DA FORTUNA ENADE
+          <div className="w-full py-1.5 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-center gap-1.5 mb-2.5">
+            <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+              Giro da Fortuna ENADE
             </h3>
-            <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-spin" />
           </div>
 
           {/* 3 Slot Reels */}
-          <div className="bg-slate-950 rounded-2xl p-2.5 border-2 border-amber-900 flex items-center justify-between gap-2 shadow-inner">
-            <div className="flex-1 h-28 sm:h-32 bg-slate-900 rounded-xl border border-amber-500/40 flex items-center justify-center p-1">
+          <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800 flex items-center justify-between gap-2">
+            <div className="flex-1 h-28 sm:h-32 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-center p-1">
               <SlotReelBadge symbolId={reel1.id} name={reel1.name} isSpinning={isSpinning} />
             </div>
-            <div className="flex-1 h-28 sm:h-32 bg-slate-900 rounded-xl border border-amber-500/40 flex items-center justify-center p-1">
+            <div className="flex-1 h-28 sm:h-32 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-center p-1">
               <SlotReelBadge symbolId={reel2.id} name={reel2.name} isSpinning={isSpinning} />
             </div>
-            <div className="flex-1 h-28 sm:h-32 bg-slate-900 rounded-xl border border-amber-500/40 flex items-center justify-center p-1">
+            <div className="flex-1 h-28 sm:h-32 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-center p-1">
               <SlotReelBadge symbolId={reel3.id} name={reel3.name} isSpinning={isSpinning} />
             </div>
           </div>
 
           {/* Win Message */}
-          <div className="mt-2 py-1 px-2 bg-slate-950/90 rounded-xl border border-yellow-400/30 text-center min-h-[30px] flex items-center justify-center">
-            <span className={`text-[11px] font-bold ${isJackpot ? 'text-yellow-300 animate-pulse' : 'text-slate-200'}`}>
-              {lastWinText || (isSpinning ? 'Girando os rolos...' : 'Pressione ESPAÇO ou toque no botão para girar!')}
+          <div className="mt-2.5 py-1.5 px-2 bg-slate-950 rounded-lg border border-slate-800 text-center min-h-[32px] flex items-center justify-center">
+            <span className={`text-xs font-semibold ${isJackpot ? 'text-amber-400' : 'text-slate-300'}`}>
+              {lastWinText || (isSpinning ? 'Girando...' : 'Pressione Espaço ou clique abaixo para girar')}
             </span>
           </div>
 
           {/* Spin Button */}
-          <div className="mt-2.5">
+          <div className="mt-3">
             <button
               disabled={isSpinning || spinsLeft <= 0}
               onClick={handleSpin}
-              className={`w-full py-3 px-4 rounded-xl font-black text-lg uppercase tracking-wider font-['Fredoka',sans-serif] border-b-4 shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer select-none ${
+              className={`w-full py-3 px-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer select-none ${
                 isSpinning || spinsLeft <= 0
-                  ? 'bg-slate-700 text-slate-400 border-slate-900 cursor-not-allowed opacity-60'
-                  : 'bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 hover:from-red-400 hover:to-amber-400 active:scale-[0.98] text-white border-red-900'
+                  ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60'
+                  : 'bg-emerald-600 hover:bg-emerald-500 active:border-b-0 active:translate-y-1 text-white border-b-4 border-emerald-800'
               }`}
             >
-              <RotateCw className={`w-5 h-5 ${isSpinning ? 'animate-spin' : ''}`} />
-              <span>{isSpinning ? 'GIRANDO...' : 'GIRAR! (Espaço)'}</span>
+              <RotateCw className={`w-4 h-4 ${isSpinning ? 'animate-spin' : ''}`} />
+              <span>{isSpinning ? 'Girando...' : 'Girar Roleta'}</span>
             </button>
           </div>
         </div>
 
         {/* Minimal Payout Reference Strip */}
-        <div className="w-full bg-slate-900/70 border border-slate-800 rounded-2xl p-2 mt-2.5 flex items-center justify-between text-[10px] text-slate-400 px-3">
-          <span>Prêmios 3x:</span>
-          <span className="text-yellow-300 font-mono font-bold">Capelo (+500) • Livro (+300) • MoEdu (+200)</span>
+        <div className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 mt-3 flex items-center justify-between text-[11px] text-slate-400 px-3">
+          <span className="font-semibold text-slate-300">Premiações:</span>
+          <span className="text-amber-400 font-mono font-medium">Capelo (+500) • Livro (+300) • MoEdu (+200)</span>
         </div>
       </div>
     </div>

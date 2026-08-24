@@ -55,16 +55,11 @@ export const MoEduCoin: React.FC<MoEduCoinProps> = ({ size = 'md', className = '
 
   return (
     <span
-      className={`relative inline-flex items-center justify-center rounded-full bg-gradient-to-tr from-amber-600 via-yellow-400 to-amber-300 border-2 border-yellow-200 shadow-[0_2px_6px_rgba(217,119,6,0.5)] shrink-0 select-none ${
+      className={`relative inline-flex items-center justify-center rounded-full bg-amber-500 border border-amber-300 text-amber-950 font-black shadow-sm shrink-0 select-none ${
         sizeMap[size]
-      } ${animate ? 'animate-pulse' : ''} ${className}`}
+      } ${animate ? 'animate-bounce-gentle' : ''} ${className}`}
     >
-      {/* Outer Rim Highlight */}
-      <span className="absolute inset-0.5 rounded-full bg-gradient-to-b from-yellow-300 via-amber-500 to-yellow-600 border border-yellow-200/60 shadow-inner flex items-center justify-center">
-        <Coins className={`${iconSizeMap[size]} text-amber-950 stroke-[2.5] drop-shadow-sm`} />
-      </span>
-      {/* Top Specular Glint */}
-      <span className="absolute top-0.5 left-1 w-1.5 h-1 bg-white/60 rounded-full blur-[0.5px] pointer-events-none" />
+      <Coins className={`${iconSizeMap[size]} text-amber-950 stroke-[2.5]`} />
     </span>
   );
 };
@@ -74,12 +69,13 @@ export const MoEduCoin: React.FC<MoEduCoinProps> = ({ size = 'md', className = '
    ========================================================================= */
 interface GameStarProps {
   filled?: boolean;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
 }
 
 export const GameStar: React.FC<GameStarProps> = ({ filled = true, size = 'md', className = '' }) => {
   const sizeMap = {
+    xs: 'w-3 h-3',
     sm: 'w-3.5 h-3.5',
     md: 'w-4 h-4',
     lg: 'w-6 h-6',
@@ -90,20 +86,16 @@ export const GameStar: React.FC<GameStarProps> = ({ filled = true, size = 'md', 
   if (!filled) {
     return (
       <div className={`relative inline-flex items-center justify-center ${className}`}>
-        <Star className={`${sizeMap[size]} text-slate-700 stroke-[1.5] opacity-40`} />
+        <Star className={`${sizeMap[size]} text-slate-700 fill-slate-800/80 stroke-[1.5]`} />
       </div>
     );
   }
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
-      {/* Soft Gold Glow */}
-      <span className="absolute inset-0 rounded-full bg-amber-400/30 blur-sm scale-125 pointer-events-none" />
       <Star
-        className={`${sizeMap[size]} text-yellow-300 fill-gradient-gold fill-amber-400 drop-shadow-[0_2px_5px_rgba(245,158,11,0.8)] stroke-yellow-200 stroke-1`}
+        className={`${sizeMap[size]} text-amber-400 fill-amber-400 stroke-amber-200 stroke-[1.2] drop-shadow-sm`}
       />
-      {/* Inner spark */}
-      <span className="absolute top-1 right-1 w-1 h-1 bg-white rounded-full opacity-80 pointer-events-none" />
     </div>
   );
 };
@@ -124,9 +116,8 @@ export const Match3ItemBadge: React.FC<Match3ItemBadgeProps> = ({ itemId, size =
     case 'book':
       return (
         <div className={`flex flex-col items-center justify-center ${className}`}>
-          <div className="relative p-2 rounded-xl bg-gradient-to-br from-amber-300 to-amber-500 shadow-[inset_0_2px_4px_rgba(255,255,255,0.6),0_4px_10px_rgba(217,119,6,0.5)] border border-amber-200">
-            <BookOpen className={`${iconSizeClass} text-amber-950 stroke-[2.2] drop-shadow`} />
-            <span className="absolute top-1 left-1.5 w-2 h-1 bg-white/70 rounded-full blur-[0.5px]" />
+          <div className="p-2 rounded-xl bg-amber-500/20 border border-amber-500/40 shadow-sm">
+            <BookOpen className={`${iconSizeClass} text-amber-400 stroke-[2]`} />
           </div>
         </div>
       );
@@ -134,9 +125,8 @@ export const Match3ItemBadge: React.FC<Match3ItemBadgeProps> = ({ itemId, size =
     case 'grad':
       return (
         <div className={`flex flex-col items-center justify-center ${className}`}>
-          <div className="relative p-2 rounded-xl bg-gradient-to-br from-blue-400 via-indigo-500 to-blue-600 shadow-[inset_0_2px_4px_rgba(255,255,255,0.6),0_4px_10px_rgba(59,130,246,0.5)] border border-blue-200">
-            <GraduationCap className={`${iconSizeClass} text-white stroke-[2.2] drop-shadow`} />
-            <span className="absolute top-1 left-1.5 w-2 h-1 bg-white/70 rounded-full blur-[0.5px]" />
+          <div className="p-2 rounded-xl bg-blue-500/20 border border-blue-500/40 shadow-sm">
+            <GraduationCap className={`${iconSizeClass} text-blue-400 stroke-[2]`} />
           </div>
         </div>
       );
@@ -144,9 +134,8 @@ export const Match3ItemBadge: React.FC<Match3ItemBadgeProps> = ({ itemId, size =
     case 'exam':
       return (
         <div className={`flex flex-col items-center justify-center ${className}`}>
-          <div className="relative p-2 rounded-xl bg-gradient-to-br from-emerald-300 via-teal-400 to-emerald-600 shadow-[inset_0_2px_4px_rgba(255,255,255,0.6),0_4px_10px_rgba(16,185,129,0.5)] border border-emerald-200">
-            <FileCheck className={`${iconSizeClass} text-emerald-950 stroke-[2.2] drop-shadow`} />
-            <span className="absolute top-1 left-1.5 w-2 h-1 bg-white/70 rounded-full blur-[0.5px]" />
+          <div className="p-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 shadow-sm">
+            <FileCheck className={`${iconSizeClass} text-emerald-400 stroke-[2]`} />
           </div>
         </div>
       );
@@ -154,9 +143,8 @@ export const Match3ItemBadge: React.FC<Match3ItemBadgeProps> = ({ itemId, size =
     case 'trophy':
       return (
         <div className={`flex flex-col items-center justify-center ${className}`}>
-          <div className="relative p-2 rounded-xl bg-gradient-to-br from-yellow-200 via-amber-400 to-yellow-500 shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),0_4px_10px_rgba(234,179,8,0.6)] border border-yellow-100">
-            <Trophy className={`${iconSizeClass} text-amber-950 stroke-[2.2] drop-shadow`} />
-            <span className="absolute top-1 left-1.5 w-2 h-1 bg-white/80 rounded-full blur-[0.5px]" />
+          <div className="p-2 rounded-xl bg-yellow-500/20 border border-yellow-500/40 shadow-sm">
+            <Trophy className={`${iconSizeClass} text-yellow-400 stroke-[2]`} />
           </div>
         </div>
       );
@@ -164,9 +152,8 @@ export const Match3ItemBadge: React.FC<Match3ItemBadgeProps> = ({ itemId, size =
     case 'bulb':
       return (
         <div className={`flex flex-col items-center justify-center ${className}`}>
-          <div className="relative p-2 rounded-xl bg-gradient-to-br from-rose-400 via-orange-400 to-rose-500 shadow-[inset_0_2px_4px_rgba(255,255,255,0.6),0_4px_10px_rgba(244,63,94,0.5)] border border-orange-200">
-            <Lightbulb className={`${iconSizeClass} text-white stroke-[2.2] drop-shadow`} />
-            <span className="absolute top-1 left-1.5 w-2 h-1 bg-white/70 rounded-full blur-[0.5px]" />
+          <div className="p-2 rounded-xl bg-rose-500/20 border border-rose-500/40 shadow-sm">
+            <Lightbulb className={`${iconSizeClass} text-rose-400 stroke-[2]`} />
           </div>
         </div>
       );
@@ -175,9 +162,8 @@ export const Match3ItemBadge: React.FC<Match3ItemBadgeProps> = ({ itemId, size =
     default:
       return (
         <div className={`flex flex-col items-center justify-center ${className}`}>
-          <div className="relative p-2 rounded-xl bg-gradient-to-br from-purple-300 via-fuchsia-400 to-purple-600 shadow-[inset_0_2px_4px_rgba(255,255,255,0.6),0_4px_10px_rgba(168,85,247,0.5)] border border-purple-200">
-            <Medal className={`${iconSizeClass} text-purple-950 stroke-[2.2] drop-shadow`} />
-            <span className="absolute top-1 left-1.5 w-2 h-1 bg-white/70 rounded-full blur-[0.5px]" />
+          <div className="p-2 rounded-xl bg-purple-500/20 border border-purple-500/40 shadow-sm">
+            <Medal className={`${iconSizeClass} text-purple-400 stroke-[2]`} />
           </div>
         </div>
       );
@@ -189,58 +175,57 @@ export const Match3ItemBadge: React.FC<Match3ItemBadgeProps> = ({ itemId, size =
    ========================================================================= */
 interface SlotReelBadgeProps {
   symbolId: string;
+  name?: string;
+  isSpinning?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }
 
 export const SlotReelBadge: React.FC<SlotReelBadgeProps> = ({ symbolId, size = 'md' }) => {
-  const iconSize = size === 'sm' ? 'w-5 h-5' : size === 'lg' ? 'w-10 h-10' : 'w-8 h-8 sm:w-9 sm:h-9';
+  const iconSize = size === 'sm' ? 'w-5 h-5' : size === 'lg' ? 'w-9 h-9' : 'w-7 h-7 sm:w-8 sm:h-8';
 
   switch (symbolId) {
     case 'tiger':
       return (
         <div className="relative flex flex-col items-center justify-center">
-          <div className="p-3 rounded-2xl bg-gradient-to-tr from-amber-600 via-red-500 to-yellow-400 border-2 border-yellow-200 shadow-[0_0_15px_rgba(239,68,68,0.7)] flex items-center justify-center">
-            <Flame className={`${iconSize} text-white fill-amber-200 stroke-[2] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`} />
+          <div className="p-3 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shadow-sm">
+            <Flame className={`${iconSize} text-amber-400 stroke-[2]`} />
           </div>
-          <span className="absolute -top-1 -right-1">
-            <Crown className="w-4 h-4 text-yellow-300 fill-yellow-400 drop-shadow" />
-          </span>
         </div>
       );
 
     case 'diploma':
       return (
-        <div className="p-3 rounded-2xl bg-gradient-to-tr from-yellow-500 via-amber-400 to-yellow-200 border-2 border-white shadow-[0_0_15px_rgba(245,158,11,0.6)] flex items-center justify-center">
-          <ScrollText className={`${iconSize} text-amber-950 stroke-[2] drop-shadow`} />
+        <div className="p-3 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center shadow-sm">
+          <ScrollText className={`${iconSize} text-amber-300 stroke-[2]`} />
         </div>
       );
 
     case 'capelo':
       return (
-        <div className="p-3 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 border-2 border-cyan-200 shadow-[0_0_15px_rgba(59,130,246,0.6)] flex items-center justify-center">
-          <GraduationCap className={`${iconSize} text-white stroke-[2] drop-shadow`} />
+        <div className="p-3 rounded-2xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shadow-sm">
+          <GraduationCap className={`${iconSize} text-blue-400 stroke-[2]`} />
         </div>
       );
 
     case 'moedu':
       return (
-        <div className="p-3 rounded-2xl bg-gradient-to-tr from-yellow-400 via-amber-500 to-yellow-300 border-2 border-yellow-200 shadow-[0_0_15px_rgba(234,179,8,0.7)] flex items-center justify-center">
-          <Coins className={`${iconSize} text-amber-950 stroke-[2.2] drop-shadow`} />
+        <div className="p-3 rounded-2xl bg-yellow-500/20 border border-yellow-400/40 flex items-center justify-center shadow-sm">
+          <Coins className={`${iconSize} text-yellow-400 stroke-[2]`} />
         </div>
       );
 
     case 'trophy':
       return (
-        <div className="p-3 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-400 to-yellow-400 border-2 border-yellow-200 shadow-[0_0_15px_rgba(249,115,22,0.6)] flex items-center justify-center">
-          <Trophy className={`${iconSize} text-amber-950 stroke-[2] drop-shadow`} />
+        <div className="p-3 rounded-2xl bg-orange-500/20 border border-orange-400/40 flex items-center justify-center shadow-sm">
+          <Trophy className={`${iconSize} text-orange-400 stroke-[2]`} />
         </div>
       );
 
     case 'coffee':
     default:
       return (
-        <div className="p-3 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 border-2 border-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.6)] flex items-center justify-center">
-          <Coffee className={`${iconSize} text-white stroke-[2] drop-shadow`} />
+        <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shadow-sm">
+          <Coffee className={`${iconSize} text-emerald-400 stroke-[2]`} />
         </div>
       );
   }
@@ -251,7 +236,7 @@ export const SlotReelBadge: React.FC<SlotReelBadgeProps> = ({ symbolId, size = '
    ========================================================================= */
 interface AvatarInsigniaProps {
   avatarKey?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
@@ -261,6 +246,7 @@ export const AvatarInsignia: React.FC<AvatarInsigniaProps> = ({
   className = '',
 }) => {
   const containerSizeMap = {
+    xs: 'w-6 h-6 rounded-lg p-0.5',
     sm: 'w-7 h-7 rounded-xl p-1',
     md: 'w-8 h-8 rounded-xl p-1.5',
     lg: 'w-11 h-11 rounded-2xl p-2',
@@ -268,6 +254,7 @@ export const AvatarInsignia: React.FC<AvatarInsigniaProps> = ({
   };
 
   const iconSizeMap = {
+    xs: 'w-3 h-3',
     sm: 'w-4 h-4',
     md: 'w-5 h-5',
     lg: 'w-6 h-6',
@@ -280,9 +267,9 @@ export const AvatarInsignia: React.FC<AvatarInsigniaProps> = ({
   if (cleanKey.includes('fera') || cleanKey.includes('tigre') || cleanKey.includes('🐯')) {
     return (
       <div
-        className={`relative bg-gradient-to-br from-amber-500 via-red-500 to-rose-600 border-2 border-amber-200 shadow-md flex items-center justify-center text-white shrink-0 ${containerSizeMap[size]} ${className}`}
+        className={`relative bg-amber-500/20 border border-amber-500/40 rounded-xl flex items-center justify-center text-amber-400 shrink-0 ${containerSizeMap[size]} ${className}`}
       >
-        <Flame className={`${iconSizeMap[size]} text-yellow-200 fill-amber-300 stroke-[2]`} />
+        <Flame className={`${iconSizeMap[size]} text-amber-400 stroke-[2]`} />
       </div>
     );
   }
@@ -290,9 +277,9 @@ export const AvatarInsignia: React.FC<AvatarInsigniaProps> = ({
   if (cleanKey.includes('cientista') || cleanKey.includes('brilhante') || cleanKey.includes('crânio') || cleanKey.includes('🧑‍🔬')) {
     return (
       <div
-        className={`relative bg-gradient-to-br from-cyan-500 via-teal-500 to-indigo-600 border-2 border-cyan-200 shadow-md flex items-center justify-center text-white shrink-0 ${containerSizeMap[size]} ${className}`}
+        className={`relative bg-cyan-500/20 border border-cyan-500/40 rounded-xl flex items-center justify-center text-cyan-300 shrink-0 ${containerSizeMap[size]} ${className}`}
       >
-        <Brain className={`${iconSizeMap[size]} text-cyan-100 stroke-[2]`} />
+        <Brain className={`${iconSizeMap[size]} text-cyan-300 stroke-[2]`} />
       </div>
     );
   }
@@ -300,9 +287,9 @@ export const AvatarInsignia: React.FC<AvatarInsigniaProps> = ({
   if (cleanKey.includes('mestre') || cleanKey.includes('gabarito') || cleanKey.includes('📜')) {
     return (
       <div
-        className={`relative bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 border-2 border-yellow-200 shadow-md flex items-center justify-center text-slate-950 shrink-0 ${containerSizeMap[size]} ${className}`}
+        className={`relative bg-amber-500/20 border border-amber-500/40 rounded-xl flex items-center justify-center text-amber-300 shrink-0 ${containerSizeMap[size]} ${className}`}
       >
-        <ScrollText className={`${iconSizeMap[size]} text-amber-950 stroke-[2.2]`} />
+        <ScrollText className={`${iconSizeMap[size]} text-amber-300 stroke-[2.2]`} />
       </div>
     );
   }
@@ -310,9 +297,9 @@ export const AvatarInsignia: React.FC<AvatarInsigniaProps> = ({
   if (cleanKey.includes('calculista') || cleanKey.includes('livro') || cleanKey.includes('📚')) {
     return (
       <div
-        className={`relative bg-gradient-to-br from-emerald-500 via-teal-600 to-indigo-700 border-2 border-emerald-200 shadow-md flex items-center justify-center text-white shrink-0 ${containerSizeMap[size]} ${className}`}
+        className={`relative bg-emerald-500/20 border border-emerald-500/40 rounded-xl flex items-center justify-center text-emerald-300 shrink-0 ${containerSizeMap[size]} ${className}`}
       >
-        <BookOpen className={`${iconSizeMap[size]} text-emerald-100 stroke-[2]`} />
+        <BookOpen className={`${iconSizeMap[size]} text-emerald-300 stroke-[2]`} />
       </div>
     );
   }
@@ -320,9 +307,9 @@ export const AvatarInsignia: React.FC<AvatarInsigniaProps> = ({
   if (cleanKey.includes('relâmpago') || cleanKey.includes('veterana') || cleanKey.includes('⚡')) {
     return (
       <div
-        className={`relative bg-gradient-to-br from-yellow-400 via-amber-500 to-rose-600 border-2 border-yellow-200 shadow-md flex items-center justify-center text-white shrink-0 ${containerSizeMap[size]} ${className}`}
+        className={`relative bg-yellow-500/20 border border-yellow-500/40 rounded-xl flex items-center justify-center text-yellow-300 shrink-0 ${containerSizeMap[size]} ${className}`}
       >
-        <Zap className={`${iconSizeMap[size]} text-yellow-100 fill-amber-300 stroke-[2]`} />
+        <Zap className={`${iconSizeMap[size]} text-yellow-300 stroke-[2]`} />
       </div>
     );
   }
@@ -330,9 +317,9 @@ export const AvatarInsignia: React.FC<AvatarInsigniaProps> = ({
   // Default: Capelo Graduação
   return (
     <div
-      className={`relative bg-gradient-to-br from-indigo-500 via-purple-600 to-blue-600 border-2 border-indigo-200 shadow-md flex items-center justify-center text-white shrink-0 ${containerSizeMap[size]} ${className}`}
+      className={`relative bg-blue-500/20 border border-blue-500/40 rounded-xl flex items-center justify-center text-blue-300 shrink-0 ${containerSizeMap[size]} ${className}`}
     >
-      <GraduationCap className={`${iconSizeMap[size]} text-indigo-100 stroke-[2]`} />
+      <GraduationCap className={`${iconSizeMap[size]} text-blue-300 stroke-[2]`} />
     </div>
   );
 };
@@ -390,28 +377,28 @@ interface LeaderboardRankBadgeProps {
 export const LeaderboardRankBadge: React.FC<LeaderboardRankBadgeProps> = ({ rank }) => {
   if (rank === 1) {
     return (
-      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-300 to-amber-400 border border-yellow-100 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.8)]">
-        <Crown className="w-5 h-5 text-amber-950 fill-yellow-200 stroke-[2]" />
+      <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center">
+        <Crown className="w-4 h-4 text-amber-400" />
       </div>
     );
   }
   if (rank === 2) {
     return (
-      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-slate-400 via-slate-200 to-slate-400 border border-white flex items-center justify-center shadow-[0_0_8px_rgba(203,213,225,0.6)]">
-        <Medal className="w-5 h-5 text-slate-900 fill-slate-100 stroke-[2]" />
+      <div className="w-8 h-8 rounded-xl bg-slate-400/20 border border-slate-400 flex items-center justify-center">
+        <Medal className="w-4 h-4 text-slate-300" />
       </div>
     );
   }
   if (rank === 3) {
     return (
-      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-800 border border-amber-300 flex items-center justify-center shadow-[0_0_8px_rgba(180,83,9,0.6)]">
-        <Award className="w-5 h-5 text-amber-950 fill-amber-300 stroke-[2]" />
+      <div className="w-8 h-8 rounded-xl bg-amber-700/20 border border-amber-600 flex items-center justify-center">
+        <Award className="w-4 h-4 text-amber-500" />
       </div>
     );
   }
 
   return (
-    <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-black font-mono text-slate-400">
+    <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold font-mono text-slate-400">
       #{rank}
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import { Volume2, VolumeX, ShoppingBag, Trophy, ArrowLeft } from 'lucide-react';
 import { PlayerState } from '../types';
 import { sound } from '../utils/sound';
@@ -54,8 +55,8 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
   }, [player.moEdu, displayCoins]);
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-slate-950/90 backdrop-blur-md border-b border-indigo-500/20 shadow-md px-2.5 py-2 sm:px-4 sm:py-2.5">
-      <div className="max-w-4xl mx-auto flex items-center justify-between gap-1.5 sm:gap-3">
+    <header className="sticky top-0 z-40 w-full bg-slate-900/95 backdrop-blur border-b border-slate-800 px-3 py-2 sm:px-4 sm:py-2.5">
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
         {/* Left: Back button or Player Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {showBackButton && onBackToMap ? (
@@ -64,20 +65,20 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
                 sound.playClick();
                 onBackToMap();
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-bold border border-slate-700 transition-all cursor-pointer shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer"
               title="Voltar ao Mapa"
             >
               <ArrowLeft className="w-4 h-4 text-amber-400" />
-              <span className="hidden xs:inline sm:inline">Mapa</span>
+              <span className="hidden xs:inline sm:inline font-medium">Voltar ao Mapa</span>
             </button>
           ) : (
-            <div className="flex items-center gap-1.5 bg-slate-900/90 px-2 py-1 rounded-xl border border-slate-800">
+            <div className="flex items-center gap-2 bg-slate-950/80 px-2.5 py-1.5 rounded-lg border border-slate-800">
               <AvatarInsignia avatarKey={player.equippedAvatar || 'capelo'} size="sm" />
               <div className="flex flex-col text-left">
-                <span className="text-[11px] sm:text-xs font-bold text-white leading-tight truncate max-w-[75px] sm:max-w-[110px]">
+                <span className="text-xs font-bold text-slate-100 leading-tight truncate max-w-[85px] sm:max-w-[120px]">
                   {player.name}
                 </span>
-                <span className="text-[9px] font-semibold text-amber-400 leading-none truncate max-w-[75px] sm:max-w-[110px]">
+                <span className="text-[10px] font-medium text-amber-400 leading-none truncate max-w-[85px] sm:max-w-[120px]">
                   {player.equippedTitle || 'Estudante'}
                 </span>
               </div>
@@ -86,75 +87,81 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
         </div>
 
         {/* Center: Stars & MoEdu Counter */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Star pill */}
-          <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 sm:px-2.5 sm:py-1 rounded-full border border-amber-500/30">
+          <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 sm:px-3 sm:py-1 rounded-lg border border-slate-800">
             <GameStar size="xs" />
-            <span className="text-xs sm:text-sm font-black text-amber-300 font-mono">
+            <span className="text-xs sm:text-sm font-bold text-amber-400 font-mono">
               {totalStars}
             </span>
           </div>
 
           {/* MoEdu Animated Coin Counter */}
           <div
-            className={`flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-gradient-to-r from-amber-600/30 to-yellow-500/30 border border-yellow-400/60 shadow-sm transition-transform duration-300 ${
-              isCoinPulsing ? 'scale-105 ring-2 ring-yellow-400/40' : ''
+            className={`flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1 rounded-lg bg-slate-950 border border-slate-800 transition-all ${
+              isCoinPulsing ? 'border-amber-500/60 bg-amber-950/20' : ''
             }`}
           >
             <MoEduCoin size="sm" />
-            <span className="text-xs sm:text-sm font-black text-yellow-300 font-mono">
+            <span className="text-xs sm:text-sm font-bold text-amber-300 font-mono">
               {displayCoins.toLocaleString('pt-BR')}
             </span>
           </div>
         </div>
 
         {/* Right: Sound, Shop, Ranking */}
-        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Shop button */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => {
               sound.playClick();
               onOpenShop();
             }}
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs border border-indigo-400/40 transition-all cursor-pointer shadow-sm flex items-center gap-1"
-            title="Loja"
+            className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition-all cursor-pointer flex items-center gap-1.5"
+            title="Loja de Itens"
           >
-            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-300" />
+            <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Loja</span>
-          </button>
+          </motion.button>
 
           {/* Ranking button */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => {
               sound.playClick();
               onOpenRanking();
             }}
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs border border-amber-400/40 transition-all cursor-pointer shadow-sm flex items-center gap-1"
-            title="Rank"
+            className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition-all cursor-pointer flex items-center gap-1.5"
+            title="Classificação Geral"
           >
-            <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-200" />
-            <span className="hidden sm:inline">Rank</span>
-          </button>
+            <Trophy className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Ranking</span>
+          </motion.button>
 
           {/* Sound Mute Toggle */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => {
               sound.playClick();
               onToggleSound();
             }}
-            className={`p-1.5 rounded-xl transition-all cursor-pointer border shadow-sm ${
+            className={`p-1.5 rounded-lg transition-all cursor-pointer border ${
               player.soundEnabled
-                ? 'bg-slate-900 hover:bg-slate-800 text-teal-300 border-slate-700'
-                : 'bg-rose-950/80 hover:bg-rose-900 text-rose-300 border-rose-800'
+                ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                : 'bg-slate-900 hover:bg-slate-800 text-slate-500 border-slate-800'
             }`}
             title={player.soundEnabled ? 'Som Ativado' : 'Som Mudo'}
           >
             {player.soundEnabled ? (
-              <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <Volume2 className="w-4 h-4 text-slate-300" />
             ) : (
-              <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <VolumeX className="w-4 h-4 text-slate-500" />
             )}
-          </button>
+          </motion.button>
         </div>
       </div>
     </header>

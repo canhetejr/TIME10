@@ -3,68 +3,64 @@
 @layer utilities {
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-6px); }
-    40%, 80% { transform: translateX(6px); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
   }
 
   @keyframes floatUp {
-    0% { transform: translateY(0) scale(0.9); opacity: 1; }
-    50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
-    100% { transform: translateY(-40px) scale(1); opacity: 0; }
+    0% { transform: translateY(0) scale(0.9); opacity: 0; }
+    20% { transform: translateY(-8px) scale(1.05); opacity: 1; }
+    80% { transform: translateY(-28px) scale(1); opacity: 0.9; }
+    100% { transform: translateY(-44px) scale(0.9); opacity: 0; }
   }
 
-  @keyframes bounceGentle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
+  @keyframes reelBlur {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0); }
   }
 
-  @keyframes scaleUp {
-    0% { transform: scale(0.85); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+  @keyframes pathDash {
+    to {
+      stroke-dashoffset: -40;
+    }
   }
 
   .animate-shake {
-    animation: shake 0.4s ease-in-out;
+    animation: shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
   }
 
   .animate-float-up {
-    animation: floatUp 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: floatUp 0.75s ease-out forwards;
   }
 
-  .animate-bounce-gentle {
-    animation: bounceGentle 2s ease-in-out infinite;
+  .animate-reel-blur {
+    animation: reelBlur 0.12s linear infinite;
   }
 
-  .animate-bounce-short {
-    animation: bounceGentle 1.2s ease-in-out infinite;
+  .animate-path-flow {
+    stroke-dasharray: 6 6;
+    animation: pathDash 8s linear infinite;
   }
 
-  .animate-scale-up {
-    animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* Tactile Button Press Styles */
+  .btn-tactile-primary {
+    @apply relative border-b-4 active:border-b-0 active:translate-y-1 transition-all;
   }
 
-  .animate-fade-in {
-    animation: fadeIn 0.25s ease-out forwards;
-  }
-
-  /* Custom Game Scrollbar */
+  /* Clean Custom Game Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.6);
+    background: #0f172a;
     border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.5);
+    background: #334155;
     border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.8);
+    background: #475569;
   }
 }
