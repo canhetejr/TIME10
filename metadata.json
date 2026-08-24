@@ -1,0 +1,6 @@
+{
+  "name": "Jornada ENADE",
+  "description": "Jogo web gamificado e interativo com trilha de fases, quiz Show do Milhão, Match-3 dos Documentos e Giro da Fortuna MoEdu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
