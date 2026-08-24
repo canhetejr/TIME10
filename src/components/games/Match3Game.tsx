@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Sparkles, Zap, Trophy, RotateCcw, ArrowRight } from 'lucide-react';
 import { LevelConfig } from '../../types';
 import { MATCH3_ITEMS } from '../../data/gameData';
 import { sound } from '../../utils/sound';
-import { fireCorrectSparkles, fireWinConfetti } from '../../utils/confetti';
 import { GameStar, Match3ItemBadge } from '../GameIcons';
+import { ArrowLeft, Lightbulb } from 'lucide-react';
 
 interface Match3GameProps {
   level: LevelConfig;
@@ -16,7 +15,7 @@ const GRID_SIZE = 6;
 
 interface Tile {
   id: string;
-  itemId: string; // matches MATCH3_ITEMS id
+  itemId: string;
   row: number;
   col: number;
   isMatched?: boolean;
@@ -33,6 +32,10 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
   const [isProcessing, setIsProcessing] = useState(false);
   const [comboCount, setComboCount] = useState(0);
   const [floatingPoints, setFloatingPoints] = useState<{ id: number; text: string; row: number; col: number }[]>([]);
+  const [hintTiles, setHintTiles] = useState<{ r1: number; c1: number; r2: number; c2: number } | null>(null);
+
+  const touchStartRef = useRef<{ row: number; col: number; x: number; y: number } | null>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Generate initial valid board without pre-existing 3-in-a-row
   const createInitialBoard = useCallback(() => {
@@ -42,11 +45,9 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
       for (let c = 0; c < GRID_SIZE; c++) {
         let validItems = MATCH3_ITEMS.map((item) => item.id);
 
-        // Prevent horizontal match-3
         if (c >= 2 && row[c - 1]?.itemId === row[c - 2]?.itemId) {
           validItems = validItems.filter((id) => id !== row[c - 1].itemId);
         }
-        // Prevent vertical match-3
         if (r >= 2 && newBoard[r - 1][c]?.itemId === newBoard[r - 2][c]?.itemId) {
           validItems = validItems.filter((id) => id !== newBoard[r - 1][c].itemId);
         }
@@ -72,7 +73,6 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
   const findMatches = (currentBoard: Tile[][]) => {
     const matchedCoords = new Set<string>();
 
-    // Check horizontal
     for (let r = 0; r < GRID_SIZE; r++) {
       for (let c = 0; c < GRID_SIZE - 2; c++) {
         const item1 = currentBoard[r][c]?.itemId;
@@ -87,7 +87,6 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
       }
     }
 
-    // Check vertical
     for (let c = 0; c < GRID_SIZE; c++) {
       for (let r = 0; r < GRID_SIZE - 2; r++) {
         const item1 = currentBoard[r][c]?.itemId;
@@ -105,7 +104,65 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
     return matchedCoords;
   };
 
-  // Resolve board matches, cascades and gravity
+  // Find any valid move for hinting
+  const findPossibleMove = useCallback((currentBoard: Tile[][]) => {
+    if (currentBoard.length === 0) return null;
+
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        // Try swap right
+        if (c < GRID_SIZE - 1) {
+          const testBoard = currentBoard.map((row) => row.map((t) => ({ ...t })));
+          const temp = testBoard[r][c].itemId;
+          testBoard[r][c].itemId = testBoard[r][c + 1].itemId;
+          testBoard[r][c + 1].itemId = temp;
+          if (findMatches(testBoard).size > 0) {
+            return { r1: r, c1: c, r2: r, c2: c + 1 };
+          }
+        }
+        // Try swap down
+        if (r < GRID_SIZE - 1) {
+          const testBoard = currentBoard.map((row) => row.map((t) => ({ ...t })));
+          const temp = testBoard[r][c].itemId;
+          testBoard[r][c].itemId = testBoard[r + 1][c].itemId;
+          testBoard[r + 1][c].itemId = temp;
+          if (findMatches(testBoard).size > 0) {
+            return { r1: r, c1: c, r2: r + 1, c2: c };
+          }
+        }
+      }
+    }
+    return null;
+  }, []);
+
+  // Reset idle hint timer
+  const resetIdleHint = useCallback(() => {
+    setHintTiles(null);
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+
+    idleTimerRef.current = setTimeout(() => {
+      if (!isProcessing && board.length > 0) {
+        const hint = findPossibleMove(board);
+        if (hint) setHintTiles(hint);
+      }
+    }, 4500);
+  }, [board, isProcessing, findPossibleMove]);
+
+  useEffect(() => {
+    resetIdleHint();
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [resetIdleHint]);
+
+  const triggerManualHint = () => {
+    sound.playClick();
+    const hint = findPossibleMove(board);
+    if (hint) {
+      setHintTiles(hint);
+    }
+  };
+
   const processBoardMatches = async (boardToProcess: Tile[][], currentCombo: number) => {
     const matches = findMatches(boardToProcess);
     if (matches.size === 0) {
@@ -124,11 +181,9 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
       sound.playMatch();
     }
 
-    // Calculate score
     const pointsGained = matches.size * 50 * newCombo;
     setScore((prev) => prev + pointsGained);
 
-    // Show floating point animation
     const firstCoord = Array.from(matches)[0].split(',');
     const floatId = Date.now() + Math.random();
     setFloatingPoints((prev) => [
@@ -142,9 +197,8 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
     ]);
     setTimeout(() => {
       setFloatingPoints((prev) => prev.filter((p) => p.id !== floatId));
-    }, 900);
+    }, 700);
 
-    // Mark matched tiles
     const markedBoard = boardToProcess.map((row, r) =>
       row.map((tile, c) => ({
         ...tile,
@@ -153,51 +207,85 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
     );
     setBoard(markedBoard);
 
-    // Wait for pop animation
-    await new Promise((res) => setTimeout(res, 250));
+    await new Promise((res) => setTimeout(res, 200));
 
-    // Drop tiles down (gravity)
     const newBoard: Tile[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
 
     for (let c = 0; c < GRID_SIZE; c++) {
-      let emptyRow = GRID_SIZE - 1;
-      // Drop existing surviving tiles
+      const remainingTiles: Tile[] = [];
       for (let r = GRID_SIZE - 1; r >= 0; r--) {
         if (!matches.has(`${r},${c}`)) {
-          newBoard[emptyRow][c] = {
-            ...markedBoard[r][c],
-            row: emptyRow,
-            col: c,
-            isMatched: false,
-          };
-          emptyRow--;
+          remainingTiles.push(boardToProcess[r][c]);
         }
       }
-      // Fill remaining top with new random items
-      for (let r = emptyRow; r >= 0; r--) {
-        const randomItem = MATCH3_ITEMS[Math.floor(Math.random() * MATCH3_ITEMS.length)].id;
-        newBoard[r][c] = {
-          id: `tile_${r}_${c}_${Date.now()}_${Math.random()}`,
-          itemId: randomItem,
-          row: r,
+
+      let fillRow = GRID_SIZE - 1;
+      for (const tile of remainingTiles) {
+        newBoard[fillRow][c] = {
+          ...tile,
+          row: fillRow,
           col: c,
           isMatched: false,
         };
+        fillRow--;
+      }
+
+      while (fillRow >= 0) {
+        const randomItem =
+          MATCH3_ITEMS[Math.floor(Math.random() * MATCH3_ITEMS.length)].id;
+        newBoard[fillRow][c] = {
+          id: `tile_${fillRow}_${c}_${Math.random()}`,
+          itemId: randomItem,
+          row: fillRow,
+          col: c,
+          isMatched: false,
+        };
+        fillRow--;
       }
     }
 
     setBoard(newBoard);
+    await new Promise((res) => setTimeout(res, 200));
 
-    // Wait for falling animation, then recursively check for chain combos
-    await new Promise((res) => setTimeout(res, 250));
-    await processBoardMatches(newBoard, newCombo);
+    processBoardMatches(newBoard, newCombo);
   };
 
-  // Handle tile click & swap
-  const handleTileClick = async (r: number, c: number) => {
+  const executeSwap = async (r1: number, c1: number, r2: number, c2: number) => {
+    if (isProcessing || movesLeft <= 0) return;
+
+    setIsProcessing(true);
+    setSelectedTile(null);
+    setHintTiles(null);
+
+    const testBoard = board.map((row) => row.map((t) => ({ ...t })));
+    const tempItem = testBoard[r1][c1].itemId;
+    testBoard[r1][c1].itemId = testBoard[r2][c2].itemId;
+    testBoard[r2][c2].itemId = tempItem;
+
+    const matches = findMatches(testBoard);
+
+    if (matches.size > 0) {
+      setMovesLeft((prev) => prev - 1);
+      setBoard(testBoard);
+      await processBoardMatches(testBoard, 0);
+    } else {
+      sound.playWrong();
+      setBoard(testBoard);
+      await new Promise((res) => setTimeout(res, 200));
+
+      const revertedBoard = testBoard.map((row) => row.map((t) => ({ ...t })));
+      revertedBoard[r1][c1].itemId = tempItem;
+      revertedBoard[r2][c2].itemId = testBoard[r1][c1].itemId;
+      setBoard(revertedBoard);
+      setIsProcessing(false);
+    }
+  };
+
+  const handleTileClick = (r: number, c: number) => {
     if (isProcessing || movesLeft <= 0) return;
 
     sound.playClick();
+    resetIdleHint();
 
     if (!selectedTile) {
       setSelectedTile({ row: r, col: c });
@@ -205,145 +293,169 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
     }
 
     const { row: r1, col: c1 } = selectedTile;
-
-    // Check if clicked the same tile -> deselect
-    if (r1 === r && c1 === c) {
-      setSelectedTile(null);
-      return;
-    }
-
-    // Check if adjacent (horizontal or vertical)
-    const isAdjacent = (Math.abs(r1 - r) === 1 && c1 === c) || (Math.abs(c1 - c) === 1 && r1 === r);
+    const isAdjacent = Math.abs(r1 - r) + Math.abs(c1 - c) === 1;
 
     if (!isAdjacent) {
       setSelectedTile({ row: r, col: c });
       return;
     }
 
-    // Swap tiles
-    setSelectedTile(null);
-    setIsProcessing(true);
+    executeSwap(r1, c1, r, c);
+  };
 
-    const swappedBoard = board.map((row) => [...row]);
-    const tileA = { ...swappedBoard[r1][c1], row: r, col: c };
-    const tileB = { ...swappedBoard[r][c], row: r1, col: c1 };
-    swappedBoard[r1][c1] = tileB;
-    swappedBoard[r][c] = tileA;
+  // Touch Swipe Gesture Support
+  const handleTouchStart = (r: number, c: number, e: React.TouchEvent) => {
+    if (isProcessing) return;
+    const touch = e.touches[0];
+    touchStartRef.current = { row: r, col: c, x: touch.clientX, y: touch.clientY };
+  };
 
-    setBoard(swappedBoard);
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current || isProcessing) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+    const minDistance = 20;
 
-    // Check if swap created valid matches
-    const matches = findMatches(swappedBoard);
+    const { row: r1, col: c1 } = touchStartRef.current;
+    touchStartRef.current = null;
 
-    if (matches.size > 0) {
-      setMovesLeft((prev) => prev - 1);
-      await processBoardMatches(swappedBoard, 0);
-    } else {
-      // Revert swap
-      sound.playWrong();
-      await new Promise((res) => setTimeout(res, 200));
-      const revertedBoard = board.map((row) => [...row]);
-      revertedBoard[r1][c1] = { ...board[r1][c1] };
-      revertedBoard[r][c] = { ...board[r][c] };
-      setBoard(revertedBoard);
-      setIsProcessing(false);
+    if (Math.abs(dx) > minDistance || Math.abs(dy) > minDistance) {
+      let r2 = r1;
+      let c2 = c1;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        c2 = dx > 0 ? Math.min(GRID_SIZE - 1, c1 + 1) : Math.max(0, c1 - 1);
+      } else {
+        r2 = dy > 0 ? Math.min(GRID_SIZE - 1, r1 + 1) : Math.max(0, r1 - 1);
+      }
+
+      if (r1 !== r2 || c1 !== c2) {
+        sound.playClick();
+        executeSwap(r1, c1, r2, c2);
+      }
     }
   };
 
-  // Check victory / game over condition
+  const handleConfirmExit = () => {
+    if (window.confirm('Deseja sair da fase de Match-3? O progresso da partida será cancelado.')) {
+      sound.playClick();
+      onExit();
+    }
+  };
+
+  // Check end of game
   useEffect(() => {
     if (isProcessing) return;
 
-    if (movesLeft <= 0 || score >= targetScore * 1.5) {
-      const starsEarned = score >= targetScore ? (score >= targetScore * 1.4 ? 3 : 2) : score >= targetScore * 0.7 ? 1 : 0;
-      const baseReward = starsEarned > 0 ? level.rewardMoEdu : 30;
-      const bonusCoins = Math.floor(score / 50);
+    const star1 = targetScore * 0.6;
+    const star2 = targetScore;
+    const star3 = targetScore * 1.4;
 
-      const timer = setTimeout(() => {
+    if (movesLeft === 0 || score >= star3) {
+      const stars = score >= star3 ? 3 : score >= star2 ? 2 : score >= star1 ? 1 : 0;
+      const baseReward = stars > 0 ? level.rewardMoEdu : 25;
+
+      const finishTimer = setTimeout(() => {
         onFinishGame({
-          stars: starsEarned,
+          stars,
           score,
-          moEduEarned: baseReward + bonusCoins,
-          victory: starsEarned >= 1,
+          moEduEarned: Math.round(score * 0.1) + baseReward,
+          victory: stars >= 1,
         });
-      }, 500);
+      }, 700);
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(finishTimer);
     }
-  }, [movesLeft, score, targetScore, isProcessing, level.rewardMoEdu, onFinishGame]);
+  }, [movesLeft, score, isProcessing, targetScore, level.rewardMoEdu, onFinishGame]);
 
-  // Star progress calculation
-  const star1 = targetScore * 0.7;
+  const star1 = targetScore * 0.6;
   const star2 = targetScore;
   const star3 = targetScore * 1.4;
-
   const currentStars = score >= star3 ? 3 : score >= star2 ? 2 : score >= star1 ? 1 : 0;
   const scorePercent = Math.min(100, (score / star3) * 100);
 
   return (
-    <div className="relative min-h-[calc(100vh-65px)] w-full flex flex-col items-center justify-start p-3 sm:p-5 overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950">
-      <div className="w-full max-w-lg mx-auto flex flex-col items-center">
-        {/* Match-3 HUD Banner */}
-        <div className="w-full bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-3 shadow-xl backdrop-blur-md mb-3 flex items-center justify-between gap-3">
-          {/* Moves Left */}
-          <div className="flex flex-col items-center bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Jogadas</span>
-            <span className={`text-lg sm:text-xl font-black font-mono leading-none ${movesLeft <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-300'}`}>
-              {movesLeft}
-            </span>
+    <div className="relative min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start p-3 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950">
+      <div className="w-full max-w-sm sm:max-w-md mx-auto flex flex-col items-center">
+        {/* Compact HUD with Exit & Hint */}
+        <div className="w-full bg-slate-900/90 border border-indigo-500/30 rounded-2xl px-3 py-2 shadow-lg mb-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleConfirmExit}
+              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all cursor-pointer"
+              title="Sair para o Mapa"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+            <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800 font-mono text-xs">
+              <span className="text-slate-400">Jogadas:</span>
+              <strong className={`text-sm font-black ${movesLeft <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-300'}`}>
+                {movesLeft}
+              </strong>
+            </div>
           </div>
 
-          {/* Target Score & Current */}
-          <div className="flex-1 text-center">
-            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1">
-              <span>Placar: <strong className="text-white font-mono">{score}</strong></span>
-              <span>Meta: <strong className="text-emerald-400 font-mono">{targetScore}</strong></span>
+          <div className="flex-1 px-1 text-center">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-0.5">
+              <span>{score} pts</span>
+              <span className="text-emerald-400 font-mono">Meta: {targetScore}</span>
             </div>
-
-            {/* Score Progress Bar */}
-            <div className="w-full bg-slate-950 rounded-full h-3 p-0.5 border border-slate-800 relative overflow-hidden">
+            <div className="w-full bg-slate-950 rounded-full h-2 p-0.5 border border-slate-800 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-teal-400 via-emerald-400 to-amber-400 h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                className="bg-gradient-to-r from-teal-400 to-amber-400 h-full rounded-full transition-all duration-300"
                 style={{ width: `${scorePercent}%` }}
               />
             </div>
           </div>
 
-          {/* Stars status */}
-          <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800">
-            {[1, 2, 3].map((starNum) => (
-              <GameStar
-                key={starNum}
-                filled={starNum <= currentStars}
-                size="sm"
-              />
-            ))}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={triggerManualHint}
+              disabled={isProcessing}
+              className="p-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 border border-amber-500/40 transition-all cursor-pointer"
+              title="Pedir Dica de Combinação"
+            >
+              <Lightbulb className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="flex items-center gap-0.5 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800">
+              {[1, 2, 3].map((starNum) => (
+                <GameStar key={starNum} filled={starNum <= currentStars} size="xs" />
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Combo Toast */}
+        {/* Combo Pill */}
         {comboCount > 1 && (
-          <div className="mb-2 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 font-black text-xs uppercase tracking-wider animate-bounce shadow-lg">
-            🔥 COMBO x{comboCount}! +{comboCount * 50} pts
+          <div className="mb-2 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider animate-bounce">
+            COMBO x{comboCount}!
           </div>
         )}
 
-        {/* Match-3 Board Grid */}
-        <div className="relative bg-slate-900/90 border-3 border-indigo-600/60 rounded-3xl p-2 sm:p-3.5 shadow-2xl backdrop-blur-md aspect-square w-full max-w-[380px] sm:max-w-[420px] flex items-center justify-center">
-          <div className="grid grid-cols-6 gap-1.5 sm:gap-2 w-full h-full">
+        {/* Board Grid */}
+        <div className="relative bg-slate-900/90 border-2 border-indigo-600/50 rounded-2xl p-2 shadow-xl aspect-square w-full max-w-[320px] sm:max-w-[360px] flex items-center justify-center touch-none select-none">
+          <div className="grid grid-cols-6 gap-1 w-full h-full">
             {board.map((row, r) =>
               row.map((tile, c) => {
-                const itemDef = MATCH3_ITEMS.find((it) => it.id === tile.itemId) || MATCH3_ITEMS[0];
                 const isSelected = selectedTile?.row === r && selectedTile?.col === c;
+                const isHinted =
+                  (hintTiles?.r1 === r && hintTiles?.c1 === c) ||
+                  (hintTiles?.r2 === r && hintTiles?.c2 === c);
 
                 return (
                   <button
                     key={tile.id}
                     onClick={() => handleTileClick(r, c)}
-                    className={`relative w-full h-full rounded-2xl flex items-center justify-center p-1 transition-all cursor-pointer select-none border-b-3 border-black/30 shadow-md ${
+                    onTouchStart={(e) => handleTouchStart(r, c, e)}
+                    onTouchEnd={handleTouchEnd}
+                    className={`relative w-full h-full rounded-xl flex items-center justify-center p-0.5 transition-all cursor-pointer select-none ${
                       isSelected
-                        ? 'ring-4 ring-white scale-105 z-20 shadow-[0_0_15px_rgba(255,255,255,0.8)]'
-                        : 'hover:brightness-110 active:scale-95'
+                        ? 'ring-2 ring-white scale-105 z-20 shadow-md'
+                        : isHinted
+                        ? 'ring-2 ring-yellow-400 animate-pulse z-10'
+                        : 'active:scale-95'
                     } ${tile.isMatched ? 'scale-0 opacity-0 transition-transform duration-200' : ''}`}
                   >
                     <Match3ItemBadge itemId={tile.itemId} isSelected={isSelected} />
@@ -353,14 +465,14 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
             )}
           </div>
 
-          {/* Floating point text popups */}
+          {/* Floating Points */}
           {floatingPoints.map((fp) => (
             <div
               key={fp.id}
-              className="absolute pointer-events-none text-sm sm:text-base font-black text-amber-300 font-['Fredoka',sans-serif] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-float-up z-30"
+              className="absolute pointer-events-none text-xs sm:text-sm font-black text-amber-300 font-mono animate-float-up z-30 drop-shadow"
               style={{
-                top: `${(fp.row / GRID_SIZE) * 100 + 8}%`,
-                left: `${(fp.col / GRID_SIZE) * 100 + 8}%`,
+                top: `${(fp.row / GRID_SIZE) * 100 + 4}%`,
+                left: `${(fp.col / GRID_SIZE) * 100 + 4}%`,
               }}
             >
               {fp.text}
@@ -368,9 +480,8 @@ export const Match3Game: React.FC<Match3GameProps> = ({ level, onFinishGame, onE
           ))}
         </div>
 
-        {/* Helpful Tip */}
-        <p className="mt-3 text-xs text-slate-400 text-center font-medium">
-          💡 Clique em um item e depois em outro vizinho para trocá-los e formar sequências de 3 iguais!
+        <p className="mt-2.5 text-[11px] text-slate-400 text-center font-medium">
+          💡 Toque em 2 itens ou arraste com o dedo para combinar 3 iguais.
         </p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, Zap, CheckCircle, XCircle, Sparkles, HelpCircle, ArrowRight } from 'lucide-react';
+import { Clock, Zap, CheckCircle, XCircle, HelpCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { LevelConfig, QuizQuestion } from '../../types';
 import { sound } from '../../utils/sound';
 import { fireCorrectSparkles } from '../../utils/confetti';
@@ -11,7 +11,7 @@ interface QuizGameProps {
   onExit: () => void;
 }
 
-const QUESTION_TIME = 15; // 15 seconds per question
+const QUESTION_TIME = 15;
 
 export const QuizGame: React.FC<QuizGameProps> = ({ level, onFinishGame, onExit }) => {
   const questions: QuizQuestion[] = level.quizQuestions || [];
@@ -20,21 +20,20 @@ export const QuizGame: React.FC<QuizGameProps> = ({ level, onFinishGame, onExit 
   const [isAnswered, setIsAnswered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
   const [streak, setStreak] = useState(0);
-  const [maxStreak, setMaxStreak] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [score, setScore] = useState(0);
   const [moEduEarned, setMoEduEarned] = useState(0);
-  const [isShaking, setIsShaking] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
 
   const currentQ = questions[currentIndex];
   const optionLetters = ['A', 'B', 'C', 'D'];
-  const optionColors = [
-    'from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 border-blue-900',
-    'from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 border-emerald-900',
-    'from-amber-600 to-orange-700 hover:from-amber-500 hover:to-orange-600 border-amber-900',
-    'from-rose-600 to-pink-700 hover:from-rose-500 hover:to-pink-600 border-rose-900',
-  ];
+
+  const handleTimeout = useCallback(() => {
+    sound.playWrong();
+    setIsAnswered(true);
+    setSelectedOption(-1);
+    setStreak(0);
+  }, []);
 
   // Timer countdown
   useEffect(() => {
@@ -50,19 +49,10 @@ export const QuizGame: React.FC<QuizGameProps> = ({ level, onFinishGame, onExit 
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, isAnswered, currentQ]);
+  }, [timeLeft, isAnswered, currentQ, handleTimeout]);
 
-  const handleTimeout = () => {
-    sound.playWrong();
-    setIsAnswered(true);
-    setSelectedOption(-1); // Timeout
-    setStreak(0);
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 500);
-  };
-
-  const handleSelectOption = (index: number) => {
-    if (isAnswered) return;
+  const handleSelectOption = useCallback((index: number) => {
+    if (isAnswered || !currentQ) return;
 
     setIsAnswered(true);
     setSelectedOption(index);
@@ -75,9 +65,8 @@ export const QuizGame: React.FC<QuizGameProps> = ({ level, onFinishGame, onExit 
 
       const newStreak = streak + 1;
       setStreak(newStreak);
-      if (newStreak > maxStreak) setMaxStreak(newStreak);
 
-      const streakMultiplier = 1 + (newStreak - 1) * 0.5; // 1x, 1.5x, 2x, 2.5x...
+      const streakMultiplier = 1 + (newStreak - 1) * 0.5;
       const points = Math.round((100 + timeLeft * 10) * streakMultiplier);
       const coinBonus = Math.round(30 * streakMultiplier);
 
@@ -87,12 +76,10 @@ export const QuizGame: React.FC<QuizGameProps> = ({ level, onFinishGame, onExit 
     } else {
       sound.playWrong();
       setStreak(0);
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 500);
     }
-  };
+  }, [isAnswered, currentQ, streak, timeLeft]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     sound.playClick();
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex((prev) => prev + 1);
@@ -101,8 +88,6 @@ export const QuizGame: React.FC<QuizGameProps> = ({ level, onFinishGame, onExit 
       setTimeLeft(QUESTION_TIME);
       setShowExplanation(false);
     } else {
-      // Calculate final outcome
-      const totalCorrect = correctCount + (selectedOption === currentQ.correctIndex ? 0 : 0);
       let stars = 0;
       if (correctCount >= 5) stars = 3;
       else if (correctCount >= 3) stars = 2;
@@ -118,94 +103,114 @@ export const QuizGame: React.FC<QuizGameProps> = ({ level, onFinishGame, onExit 
         victory: stars >= 1,
       });
     }
+  }, [currentIndex, questions.length, correctCount, level.rewardMoEdu, moEduEarned, onFinishGame, score]);
+
+  // Keyboard navigation shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+
+      if (!isAnswered) {
+        if (key === '1' || key === 'a') handleSelectOption(0);
+        else if (key === '2' || key === 'b') handleSelectOption(1);
+        else if (key === '3' || key === 'c') handleSelectOption(2);
+        else if (key === '4' || key === 'd') handleSelectOption(3);
+      } else {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleNext();
+        } else if (key === 'e') {
+          setShowExplanation((prev) => !prev);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAnswered, handleSelectOption, handleNext]);
+
+  const handleConfirmExit = () => {
+    if (window.confirm('Deseja sair do Quiz? O progresso desta fase será reiniciado.')) {
+      sound.playClick();
+      onExit();
+    }
   };
 
   if (!currentQ) {
-    return <div>Carregando perguntas...</div>;
+    return <div className="text-center p-8 text-white">Carregando perguntas...</div>;
   }
 
-  // Timer color indicator
   const timePercent = (timeLeft / QUESTION_TIME) * 100;
-  let timerBarColor = 'bg-emerald-400';
-  if (timeLeft <= 5) timerBarColor = 'bg-rose-500 animate-pulse';
-  else if (timeLeft <= 8) timerBarColor = 'bg-amber-400';
+  const timerBarColor =
+    timeLeft <= 4 ? 'bg-rose-500 animate-pulse' : timeLeft <= 8 ? 'bg-amber-400' : 'bg-emerald-400';
 
   return (
-    <div
-      className={`relative min-h-[calc(100vh-65px)] w-full flex flex-col items-center justify-start p-4 sm:p-6 overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 transition-all ${
-        isShaking ? 'translate-x-2 animate-shake' : ''
-      }`}
-    >
-      <div className="w-full max-w-xl mx-auto flex flex-col items-center">
-        {/* Game Status Header */}
-        <div className="w-full flex items-center justify-between gap-3 bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-3 sm:px-4 shadow-xl backdrop-blur-md mb-4">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-xl bg-indigo-600/40 border border-indigo-400/40 text-xs font-black text-indigo-200">
-              Questão {currentIndex + 1}/{questions.length}
+    <div className="relative min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start p-3 sm:p-4 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950">
+      <div className="w-full max-w-md mx-auto flex flex-col items-center">
+        {/* Compact Status Header */}
+        <div className="w-full flex items-center justify-between gap-2 bg-slate-900/90 border border-indigo-500/30 rounded-2xl px-3 py-2 shadow-lg mb-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleConfirmExit}
+              className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all cursor-pointer"
+              title="Sair para o Mapa"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+            <span className="px-2 py-0.5 rounded-lg bg-indigo-600/40 text-[11px] font-bold text-indigo-200">
+              Q{currentIndex + 1}/{questions.length}
             </span>
-            <span className="text-xs font-semibold text-slate-400 hidden sm:inline">
-              {currentQ.theme}
-            </span>
+            {streak > 1 && (
+              <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px]">
+                <Zap className="w-3 h-3 fill-current" />
+                x{streak}
+              </span>
+            )}
           </div>
 
-          {/* Streak Combo Badge */}
-          {streak > 1 && (
-            <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 font-black text-xs uppercase tracking-wider animate-bounce shadow-md">
-              <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
-              <span>COMBO x{streak}!</span>
-            </div>
-          )}
-
-          {/* Current Score */}
-          <div className="flex items-center gap-2">
-            <div className="text-right">
-              <span className="text-[10px] text-slate-400 uppercase font-bold block">Pontos</span>
-              <span className="text-xs sm:text-sm font-black text-amber-300 font-mono">
-                {score}
-              </span>
-            </div>
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="text-slate-400">Pontos:</span>
+            <strong className="text-amber-300 font-bold">{score}</strong>
           </div>
         </div>
 
         {/* Timer Bar */}
-        <div className="w-full bg-slate-900 border border-slate-800 rounded-full h-3 p-0.5 mb-4 shadow-inner">
+        <div className="w-full bg-slate-900 border border-slate-800 rounded-full h-2 p-0.5 mb-3 overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-300 ${timerBarColor}`}
             style={{ width: `${timePercent}%` }}
           />
         </div>
 
-        {/* Question Card (Show do Milhão Style) */}
-        <div className="w-full bg-gradient-to-b from-slate-900 to-indigo-950 border-2 border-indigo-500/50 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-md mb-5 text-center relative">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-indigo-600 text-[10px] font-black text-white uppercase tracking-widest border border-indigo-400 shadow-md">
+        {/* Question Card */}
+        <div className="w-full bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 shadow-xl mb-3 text-center relative">
+          <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest block mb-1">
             {currentQ.theme}
-          </div>
-
-          <p className="text-base sm:text-lg font-bold text-white leading-relaxed mt-2 font-['Plus_Jakarta_Sans',sans-serif]">
+          </span>
+          <p className="text-sm sm:text-base font-bold text-white leading-snug">
             {currentQ.question}
           </p>
-
-          <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-amber-300/80 font-medium">
-            <Clock className="w-3.5 h-3.5" />
-            <span>Tempo restante: {timeLeft}s</span>
+          <div className="mt-2 flex items-center justify-center gap-1 text-[11px] text-amber-300/80 font-mono">
+            <Clock className="w-3 h-3" />
+            <span>{timeLeft}s</span>
           </div>
         </div>
 
-        {/* 4 Colored Alternative Buttons */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        {/* 4 Alternative Buttons */}
+        <div className="w-full space-y-2 mb-3">
           {currentQ.options.map((option, idx) => {
             const isPicked = selectedOption === idx;
             const isCorrect = idx === currentQ.correctIndex;
 
-            let buttonStateStyle = `bg-gradient-to-r ${optionColors[idx]}`;
+            let buttonStyle = 'bg-slate-900/90 border-slate-700 hover:border-indigo-400 text-slate-200';
 
             if (isAnswered) {
               if (isCorrect) {
-                buttonStateStyle = 'bg-gradient-to-r from-emerald-500 to-green-600 border-emerald-300 ring-4 ring-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.5)]';
+                buttonStyle = 'bg-emerald-600/90 border-emerald-400 text-white font-bold ring-2 ring-emerald-400/50';
               } else if (isPicked && !isCorrect) {
-                buttonStateStyle = 'bg-gradient-to-r from-rose-600 to-red-700 border-rose-400 opacity-80';
+                buttonStyle = 'bg-rose-900/80 border-rose-500 text-rose-200';
               } else {
-                buttonStateStyle = 'bg-slate-800/60 border-slate-700 opacity-40';
+                buttonStyle = 'bg-slate-950/40 border-slate-800 text-slate-500 opacity-40';
               }
             }
 
@@ -214,78 +219,61 @@ export const QuizGame: React.FC<QuizGameProps> = ({ level, onFinishGame, onExit 
                 key={idx}
                 disabled={isAnswered}
                 onClick={() => handleSelectOption(idx)}
-                className={`relative w-full p-4 rounded-2xl border-b-4 text-left transition-all cursor-pointer shadow-lg active:translate-y-1 flex items-start gap-3 ${buttonStateStyle} ${
-                  !isAnswered ? 'hover:scale-[1.02]' : ''
+                className={`w-full min-h-[48px] p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${buttonStyle} ${
+                  !isAnswered ? 'active:scale-[0.99] hover:bg-slate-800/90' : ''
                 }`}
               >
-                {/* Letter bubble */}
-                <div className="w-7 h-7 rounded-xl bg-slate-950/40 border border-white/20 flex items-center justify-center font-black text-white text-xs shrink-0 mt-0.5">
+                <div className="w-6 h-6 rounded-lg bg-slate-950/50 border border-white/20 flex items-center justify-center font-bold text-white text-xs shrink-0">
                   {optionLetters[idx]}
                 </div>
-
-                {/* Option text */}
-                <div className="text-xs sm:text-sm font-semibold text-white leading-snug flex-1">
+                <div className="text-xs sm:text-sm font-medium leading-tight flex-1">
                   {option}
                 </div>
-
-                {/* Feedback Icons */}
-                {isAnswered && isCorrect && (
-                  <CheckCircle className="w-5 h-5 text-emerald-200 shrink-0 mt-0.5 animate-bounce" />
-                )}
-                {isAnswered && isPicked && !isCorrect && (
-                  <XCircle className="w-5 h-5 text-rose-200 shrink-0 mt-0.5" />
-                )}
+                {isAnswered && isCorrect && <CheckCircle className="w-4 h-4 text-emerald-300 shrink-0" />}
+                {isAnswered && isPicked && !isCorrect && <XCircle className="w-4 h-4 text-rose-300 shrink-0" />}
               </button>
             );
           })}
         </div>
 
-        {/* Post-Answer Card & Explanation */}
+        {/* Answer Feedback & Action */}
         {isAnswered && (
-          <div className="w-full bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 mb-4 shadow-xl text-left animate-scale-up">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                {selectedOption === currentQ.correctIndex ? (
-                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-sm">
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="flex items-center gap-1">
-                      Resposta Correta! (+MoEdu <MoEduCoin size="xs" />)
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 text-rose-400 font-bold text-sm">
-                    <XCircle className="w-4 h-4" />
-                    <span>Resposta Incorreta!</span>
-                  </div>
-                )}
-              </div>
+          <div className="w-full bg-slate-900 border border-indigo-500/30 rounded-2xl p-3 shadow-lg text-left animate-fadeIn">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <span className={`text-xs font-bold ${selectedOption === currentQ.correctIndex ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {selectedOption === currentQ.correctIndex ? '✓ Correto! (+MoEdu)' : '✕ Incorreto!'}
+              </span>
 
               <button
                 onClick={() => setShowExplanation(!showExplanation)}
-                className="text-xs text-indigo-300 hover:text-white flex items-center gap-1 underline cursor-pointer"
+                className="text-[11px] text-indigo-300 hover:text-white flex items-center gap-1 underline cursor-pointer"
               >
-                <HelpCircle className="w-3.5 h-3.5" />
-                <span>{showExplanation ? 'Ocultar Justificativa' : 'Ver Justificativa'}</span>
+                <HelpCircle className="w-3 h-3" />
+                <span>{showExplanation ? 'Ocultar Explicação (E)' : 'Ver Explicação (E)'}</span>
               </button>
             </div>
 
             {showExplanation && (
-              <p className="text-xs text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800 mt-2 leading-relaxed">
+              <p className="text-xs text-slate-300 bg-slate-950 p-2.5 rounded-xl border border-slate-800 my-2 leading-relaxed">
                 💡 <strong className="text-amber-300">Explicação ENADE: </strong>
                 {currentQ.explanation}
               </p>
             )}
 
-            {/* Next Button */}
             <button
               onClick={handleNext}
-              className="mt-3 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 active:translate-y-0.5 text-slate-950 font-black text-sm uppercase tracking-wider font-['Fredoka',sans-serif] border-b-3 border-amber-700 shadow-md flex items-center justify-center gap-2 cursor-pointer"
+              className="mt-2 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 active:scale-98 text-slate-950 font-black text-xs uppercase tracking-wider font-['Fredoka',sans-serif] border-b-2 border-amber-700 shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <span>{currentIndex + 1 < questions.length ? 'PRÓXIMA QUESTÃO' : 'VER RESULTADO FINAL'}</span>
+              <span>{currentIndex + 1 < questions.length ? 'PRÓXIMA QUESTÃO (Enter)' : 'RESULTADO FINAL (Enter)'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
+
+        {/* Subtle Keyboard Shortcuts Info for Desktop */}
+        <div className="mt-3 hidden sm:flex items-center justify-center gap-2 text-[10px] text-slate-500">
+          <span>Dica de teclado: use teclas <strong>1-4</strong> ou <strong>A-D</strong> para responder</span>
+        </div>
       </div>
     </div>
   );

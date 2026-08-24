@@ -3,7 +3,7 @@
  * 100% jogável, mecânicas de quiz, match-3 e slot machine.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { GameScreen, LevelConfig, LevelProgress, MilestoneChest, PlayerState, ShopItem } from './types';
 import { INITIAL_LEVELS } from './data/gameData';
 import { HeaderHUD } from './components/HeaderHUD';
@@ -16,6 +16,7 @@ import { RankingModal } from './components/RankingModal';
 import { QuizGame } from './components/games/QuizGame';
 import { Match3Game } from './components/games/Match3Game';
 import { SlotMachineGame } from './components/games/SlotMachineGame';
+import { ToastContainer, ToastMessage } from './components/Toast';
 import { sound } from './utils/sound';
 import { fireJackpotShower } from './utils/confetti';
 
@@ -47,6 +48,19 @@ const DEFAULT_PLAYER: PlayerState = {
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('splash');
   const [activeLevel, setActiveLevel] = useState<LevelConfig | null>(null);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = useCallback((type: 'success' | 'info' | 'warning', title: string, message?: string) => {
+    const id = `toast_${Date.now()}_${Math.random()}`;
+    setToasts((prev) => [...prev, { id, type, title, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3200);
+  }, []);
+
+  const handleDismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   // Player state with localStorage support and automatic migration
   const [player, setPlayer] = useState<PlayerState>(() => {
@@ -99,7 +113,9 @@ export default function App() {
   }, [player.soundEnabled]);
 
   const handleToggleSound = () => {
-    setPlayer((prev) => ({ ...prev, soundEnabled: !prev.soundEnabled }));
+    const newState = !player.soundEnabled;
+    setPlayer((prev) => ({ ...prev, soundEnabled: newState }));
+    showToast('info', newState ? '🔊 Áudio ativado' : '🔇 Áudio mudo');
   };
 
   const handleStartGameFromSplash = (playerName: string) => {
@@ -123,6 +139,8 @@ export default function App() {
       moEdu: prev.moEdu + chest.rewardMoEdu,
       claimedChests: [...(prev.claimedChests || []), chest.id],
     }));
+
+    showToast('success', '🎁 Baú Resgatado!', `+${chest.rewardMoEdu} MoEdu creditados na sua conta.`);
   };
 
   const handleStartMinigame = () => {
@@ -241,6 +259,8 @@ export default function App() {
       equippedAvatar: item.type === 'avatar' ? item.value : prev.equippedAvatar,
       equippedTitle: item.type === 'title' ? item.value : prev.equippedTitle,
     }));
+
+    showToast('success', '🛍️ Item Desbloqueado!', `${item.name} foi equipado com sucesso.`);
   };
 
   const handleEquipShopItem = (item: ShopItem) => {
@@ -249,6 +269,8 @@ export default function App() {
       equippedAvatar: item.type === 'avatar' ? item.value : prev.equippedAvatar,
       equippedTitle: item.type === 'title' ? item.value : prev.equippedTitle,
     }));
+
+    showToast('info', '✨ Item Equipado', `${item.name} está agora em exibição.`);
   };
 
   const handleResetProgress = () => {
@@ -258,6 +280,7 @@ export default function App() {
     } catch {
       // Ignore
     }
+    showToast('warning', '🔄 Progresso Reiniciado', 'O mapa foi restaurado para a Fase 1.');
   };
 
   const totalStars = (Object.values(player.levels) as LevelProgress[]).reduce((acc, l) => acc + l.stars, 0);
@@ -320,6 +343,9 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Toast Feedback Overlay */}
+      <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
 
       {/* Level Briefing Modal */}
       {isLevelModalOpen && activeLevel && (
