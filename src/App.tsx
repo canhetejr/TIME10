@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { GameScreen, LevelConfig, LevelProgress, PlayerState, ShopItem } from './types';
+import { GameScreen, LevelConfig, LevelProgress, MilestoneChest, PlayerState, ShopItem } from './types';
 import { INITIAL_LEVELS } from './data/gameData';
 import { HeaderHUD } from './components/HeaderHUD';
 import { SplashScreen } from './components/SplashScreen';
@@ -17,18 +17,20 @@ import { QuizGame } from './components/games/QuizGame';
 import { Match3Game } from './components/games/Match3Game';
 import { SlotMachineGame } from './components/games/SlotMachineGame';
 import { sound } from './utils/sound';
+import { fireJackpotShower } from './utils/confetti';
 
-const STORAGE_KEY = 'jornada_enade_save_v1';
+const STORAGE_KEY = 'jornada_enade_save_v2';
 
 const DEFAULT_PLAYER: PlayerState = {
   name: 'Estudante Fera',
-  moEdu: 100, // starting gift
-  avatar: '🎓',
+  moEdu: 150, // starting gift
+  avatar: 'capelo',
   title: 'Calouro ENADE',
   soundEnabled: true,
   unlockedItems: [],
+  claimedChests: [],
   equippedTitle: 'Calouro ENADE',
-  equippedAvatar: '🎓',
+  equippedAvatar: 'capelo',
   levels: {
     1: { levelId: 1, unlocked: true, completed: false, stars: 0, highScore: 0 },
     2: { levelId: 2, unlocked: false, completed: false, stars: 0, highScore: 0 },
@@ -36,6 +38,9 @@ const DEFAULT_PLAYER: PlayerState = {
     4: { levelId: 4, unlocked: false, completed: false, stars: 0, highScore: 0 },
     5: { levelId: 5, unlocked: false, completed: false, stars: 0, highScore: 0 },
     6: { levelId: 6, unlocked: false, completed: false, stars: 0, highScore: 0 },
+    7: { levelId: 7, unlocked: false, completed: false, stars: 0, highScore: 0 },
+    8: { levelId: 8, unlocked: false, completed: false, stars: 0, highScore: 0 },
+    9: { levelId: 9, unlocked: false, completed: false, stars: 0, highScore: 0 },
   },
 };
 
@@ -43,12 +48,21 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('splash');
   const [activeLevel, setActiveLevel] = useState<LevelConfig | null>(null);
 
-  // Player state with localStorage support
+  // Player state with localStorage support and automatic migration
   const [player, setPlayer] = useState<PlayerState>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('jornada_enade_save_v1');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_PLAYER,
+          ...parsed,
+          claimedChests: parsed.claimedChests || [],
+          levels: {
+            ...DEFAULT_PLAYER.levels,
+            ...(parsed.levels || {}),
+          },
+        };
       }
     } catch {
       // Fallback
@@ -96,6 +110,19 @@ export default function App() {
   const handleSelectLevel = (level: LevelConfig) => {
     setActiveLevel(level);
     setIsLevelModalOpen(true);
+  };
+
+  const handleClaimMilestoneChest = (chest: MilestoneChest) => {
+    if (player.claimedChests?.includes(chest.id)) return;
+    
+    sound.playJackpot();
+    fireJackpotShower();
+
+    setPlayer((prev) => ({
+      ...prev,
+      moEdu: prev.moEdu + chest.rewardMoEdu,
+      claimedChests: [...(prev.claimedChests || []), chest.id],
+    }));
   };
 
   const handleStartMinigame = () => {
@@ -265,6 +292,7 @@ export default function App() {
             player={player}
             onSelectLevel={handleSelectLevel}
             onResetProgress={handleResetProgress}
+            onClaimChest={handleClaimMilestoneChest}
           />
         )}
 

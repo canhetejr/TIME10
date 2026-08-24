@@ -30,7 +30,11 @@ export const LevelModal: React.FC<LevelModalProps> = ({ level, progress, onStart
 
         {/* Level Icon & Badge */}
         <div className="relative inline-flex items-center justify-center mb-3">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-amber-500 p-0.5 shadow-xl">
+          <div className={`w-20 h-20 rounded-2xl p-0.5 shadow-xl ${
+            level.isBossLevel
+              ? 'bg-gradient-to-br from-amber-400 via-rose-500 to-yellow-300 animate-pulse'
+              : 'bg-gradient-to-br from-indigo-600 via-purple-600 to-amber-500'
+          }`}>
             <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
               <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center shadow-md">
                 <LevelIconBadge levelId={level.id} type={level.type} size="lg" />
@@ -42,8 +46,31 @@ export const LevelModal: React.FC<LevelModalProps> = ({ level, progress, onStart
           </div>
         </div>
 
+        {/* Track & Difficulty Badges */}
+        <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
+          <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[10px] font-bold">
+            {level.trackTitle}
+          </span>
+          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+            level.difficulty === 'Iniciante'
+              ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
+              : level.difficulty === 'Intermediário'
+              ? 'bg-blue-500/20 border-blue-400/40 text-blue-300'
+              : level.difficulty === 'Avançado'
+              ? 'bg-purple-500/20 border-purple-400/40 text-purple-300'
+              : 'bg-amber-500/25 border-amber-400/60 text-amber-300 animate-pulse'
+          }`}>
+            {level.difficulty}
+          </span>
+          {level.isBossLevel && (
+            <span className="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 text-[10px] font-black">
+              ★ Clímax da Trilha
+            </span>
+          )}
+        </div>
+
         {/* Level Title & Subtitle */}
-        <h2 className="text-xl sm:text-2xl font-black text-white font-['Fredoka',sans-serif] mt-2 leading-tight">
+        <h2 className="text-xl sm:text-2xl font-black text-white font-['Fredoka',sans-serif] mt-1 leading-tight">
           {level.title}
         </h2>
         <p className="text-xs sm:text-sm text-indigo-300 font-medium mt-1 mb-4">

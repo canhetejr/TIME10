@@ -1,18 +1,101 @@
-import { LevelConfig, ShopItem } from '../types';
+import { LevelConfig, MilestoneChest, ShopItem, TrackId } from '../types';
+
+export interface TrackInfo {
+  id: TrackId;
+  title: string;
+  subtitle: string;
+  badge: string;
+  themeColor: string;
+  accentBorder: string;
+  bgGradient: string;
+  description: string;
+  levelIds: number[];
+}
+
+export const TRACKS: TrackInfo[] = [
+  {
+    id: 'geral',
+    title: 'Trilha 1: Formação Geral & Cidadania',
+    subtitle: 'Ética, Direitos Humanos, Sustentabilidade e Fundamentos',
+    badge: 'Módulo Básico',
+    themeColor: 'from-blue-600 to-indigo-700',
+    accentBorder: 'border-indigo-500/50',
+    bgGradient: 'from-indigo-950/70 via-slate-900 to-indigo-950/40',
+    description: 'Explore os conceitos essenciais de responsabilidade social, inclusão, sustentabilidade e raciocínio crítico avaliados no componente geral do ENADE.',
+    levelIds: [1, 2, 3],
+  },
+  {
+    id: 'raciocinio',
+    title: 'Trilha 2: Raciocínio Lógico & Tecnologia',
+    subtitle: 'Transformação Digital, Matriz Energética e Métodos de Análise',
+    badge: 'Módulo Intermediário',
+    themeColor: 'from-emerald-600 to-teal-700',
+    accentBorder: 'border-emerald-500/50',
+    bgGradient: 'from-emerald-950/70 via-slate-900 to-teal-950/40',
+    description: 'Desafios dinâmicos envolvendo interpretação de dados, transição energética, ética em IA e tomada de decisão estratégica.',
+    levelIds: [4, 5, 6],
+  },
+  {
+    id: 'lideranca',
+    title: 'Trilha 3: Desafio Nota 5 & Colação de Grau',
+    subtitle: 'Casos Complexos, Bioética, Match-3 Avançado e o Grande Jackpot',
+    badge: 'Módulo Avançado & Boss',
+    themeColor: 'from-amber-600 to-yellow-600',
+    accentBorder: 'border-amber-500/50',
+    bgGradient: 'from-amber-950/70 via-slate-900 to-yellow-950/40',
+    description: 'O estágio final da sua graduação! Resolva cenários integrados, realize combinações em cadeia e conquiste a pontuação máxima rumo ao diploma.',
+    levelIds: [7, 8, 9],
+  },
+];
+
+export const MILESTONE_CHESTS: MilestoneChest[] = [
+  {
+    id: 'chest_3',
+    requiredStars: 3,
+    rewardMoEdu: 150,
+    title: 'Baú do Calouro Dedicado',
+    description: 'Parabéns pelos primeiros passos! Bônus de MoEdu liberado.',
+  },
+  {
+    id: 'chest_8',
+    requiredStars: 8,
+    rewardMoEdu: 350,
+    title: 'Baú do Acadêmico Promissor',
+    description: 'Domínio comprovado nas primeiras trilhas! MoEdu para investir.',
+  },
+  {
+    id: 'chest_15',
+    requiredStars: 15,
+    rewardMoEdu: 600,
+    title: 'Baú do Especialista ENADE',
+    description: 'Excelente pontuação! Um grande impulso na sua carteira acadêmica.',
+  },
+  {
+    id: 'chest_24',
+    requiredStars: 24,
+    rewardMoEdu: 1200,
+    title: 'Cofre Dourado da Formatura Nota 5',
+    description: 'Domínio absoluto de todas as 3 trilhas com pontuação lendária!',
+  },
+];
 
 export const INITIAL_LEVELS: LevelConfig[] = [
+  // --- TRILHA 1: FORMAÇÃO GERAL & CIDADANIA (Fases 1 a 3) ---
   {
     id: 1,
+    trackId: 'geral',
+    trackTitle: 'Trilha 1: Formação Geral',
     title: 'Fase 1: O Show da Formação Geral',
     subtitle: 'Quiz Interativo de Conhecimentos Gerais & Ética',
     type: 'quiz',
     icon: '🧠',
+    difficulty: 'Iniciante',
     rewardMoEdu: 150,
     requiredStarsToUnlock: 0,
     description: 'Responda a 5 perguntas desafiadoras do ENADE antes que o tempo acabe! Mantenha o combo para faturar mais MoEdu.',
     quizQuestions: [
       {
-        id: 'q1',
+        id: 'q1_1',
         question: 'Segundo as diretrizes de Ética e Responsabilidade Social, qual é o papel primordial da sustentabilidade no desenvolvimento contemporâneo?',
         theme: 'Sustentabilidade & Sociedade',
         options: [
@@ -25,7 +108,7 @@ export const INITIAL_LEVELS: LevelConfig[] = [
         explanation: 'O desenvolvimento sustentável integra os três pilares essenciais: econômico, social e ambiental, garantindo o presente sem esgotar o futuro.'
       },
       {
-        id: 'q2',
+        id: 'q1_2',
         question: 'No contexto dos Direitos Humanos e Cidadania, a inclusão de grupos historicamente vulneráveis deve ser garantida através de:',
         theme: 'Cidadania & Direitos Humanos',
         options: [
@@ -38,7 +121,7 @@ export const INITIAL_LEVELS: LevelConfig[] = [
         explanation: 'A equidade e as políticas afirmativas são ferramentas cruciais para reparar desigualdades históricas e efetivar a cidadania plena.'
       },
       {
-        id: 'q3',
+        id: 'q1_3',
         question: 'A Inteligência Artificial e a transformação digital na sociedade atual exigem do profissional diplomado uma postura de:',
         theme: 'Tecnologia & Inovação',
         options: [
@@ -51,7 +134,7 @@ export const INITIAL_LEVELS: LevelConfig[] = [
         explanation: 'O profissional do futuro deve liderar a tecnologia com senso crítico e ética, mitigando vieses e priorizando o bem-estar humano.'
       },
       {
-        id: 'q4',
+        id: 'q1_4',
         question: 'Ao analisar um gráfico estatístico com variação proporcional de dados econômicos, a leitura correta requer:',
         theme: 'Raciocínio Crítico & Dados',
         options: [
@@ -64,7 +147,7 @@ export const INITIAL_LEVELS: LevelConfig[] = [
         explanation: 'A alfabetização de dados exige examinar escalas, metodologias, correlações e fontes antes de extrair conclusões.'
       },
       {
-        id: 'q5',
+        id: 'q1_5',
         question: 'O ENADE avalia não apenas a memorização de conteúdos, mas sobretudo a capacidade de:',
         theme: 'Competências do Estudante',
         options: [
@@ -80,10 +163,13 @@ export const INITIAL_LEVELS: LevelConfig[] = [
   },
   {
     id: 2,
+    trackId: 'geral',
+    trackTitle: 'Trilha 1: Formação Geral',
     title: 'Fase 2: Match-3 dos Documentos',
     subtitle: 'Organize a Pasta Acadêmica e Pontue Alto!',
     type: 'match3',
     icon: '📚',
+    difficulty: 'Iniciante',
     rewardMoEdu: 200,
     requiredStarsToUnlock: 1,
     description: 'Combine 3 ou mais itens acadêmicos iguais para despachar os documentos do ENADE! Alcance a meta de 1.200 pontos em 15 jogadas.',
@@ -92,22 +178,31 @@ export const INITIAL_LEVELS: LevelConfig[] = [
   },
   {
     id: 3,
+    trackId: 'geral',
+    trackTitle: 'Trilha 1: Formação Geral',
     title: 'Fase 3: Giro da Fortuna ENADE',
-    subtitle: 'Tigrinho Acadêmico & Caça-Níquel de MoEdu',
+    subtitle: 'Caça-Níquel Acadêmico de MoEdu',
     type: 'slot',
     icon: '🎰',
+    difficulty: 'Iniciante',
     rewardMoEdu: 250,
     requiredStarsToUnlock: 2,
-    description: 'Gire a roleta dos estudantes e combine os símbolos sagrados da aprovação para faturar um jackpot de MoEdu!',
+    isBossLevel: true,
+    description: 'Gire a roleta dos estudantes e combine os símbolos sagrados da aprovação para concluir o primeiro módulo com chave de ouro!',
     slotSpinsAllowed: 5,
     slotTargetMoEdu: 400
   },
+
+  // --- TRILHA 2: RACIOCÍNIO LÓGICO & TECNOLOGIA (Fases 4 a 6) ---
   {
     id: 4,
+    trackId: 'raciocinio',
+    trackTitle: 'Trilha 2: Raciocínio & Tecnologia',
     title: 'Fase 4: Desafio Especialista ENADE',
     subtitle: 'Quiz Rápido de Raciocínio Lógico & Diversidade',
     type: 'quiz',
     icon: '⚡',
+    difficulty: 'Intermediário',
     rewardMoEdu: 300,
     requiredStarsToUnlock: 4,
     description: 'O nível subiu! Perguntas com cronômetro acelerado sobre matriz energética, diversidade cultural e bioética.',
@@ -181,25 +276,145 @@ export const INITIAL_LEVELS: LevelConfig[] = [
   },
   {
     id: 5,
-    title: 'Fase 5: Super Match-3 Gabarito Nota 5',
-    subtitle: 'Combinações Épicas e Explosões em Cadeia!',
+    trackId: 'raciocinio',
+    trackTitle: 'Trilha 2: Raciocínio & Tecnologia',
+    title: 'Fase 5: Match-3 Inovação & Dados',
+    subtitle: 'Combinações Rápidas de Artigos & Relatórios',
     type: 'match3',
-    icon: '🏆',
+    icon: '📊',
+    difficulty: 'Intermediário',
     rewardMoEdu: 350,
     requiredStarsToUnlock: 6,
-    description: 'Meta ambiciosa: atinja 2.000 pontos em 18 jogadas! Ative bônus em cadeia para estourar o placar.',
-    match3TargetScore: 2000,
-    match3MaxMoves: 18
+    description: 'O laboratório precisa de velocidade! Alcance 1.600 pontos em 16 jogadas para validar os dados do ENADE.',
+    match3TargetScore: 1600,
+    match3MaxMoves: 16
   },
   {
     id: 6,
-    title: 'Fase 6: O Grande Jackpot do Diploma',
-    subtitle: 'A Roleta Dourada da Colação de Grau',
+    trackId: 'raciocinio',
+    trackTitle: 'Trilha 2: Raciocínio & Tecnologia',
+    title: 'Fase 6: Giro Tecnológico da Pesquisa',
+    subtitle: 'Roleta Científica com Multiplicadores Altos',
+    type: 'slot',
+    icon: '🧪',
+    difficulty: 'Avançado',
+    rewardMoEdu: 400,
+    requiredStarsToUnlock: 8,
+    isBossLevel: true,
+    description: 'A máquina de pesquisa está energizada! Consiga 600 MoEdu em 6 giros com símbolos especiais de inovação.',
+    slotSpinsAllowed: 6,
+    slotTargetMoEdu: 600
+  },
+
+  // --- TRILHA 3: DESAFIO NOTA 5 & COLAÇÃO DE GRAU (Fases 7 a 9) ---
+  {
+    id: 7,
+    trackId: 'lideranca',
+    trackTitle: 'Trilha 3: Desafio Nota 5',
+    title: 'Fase 7: Casos Integrados & Gestão',
+    subtitle: 'Quiz Avançado de Cenários Complexos e Governança',
+    type: 'quiz',
+    icon: '🎓',
+    difficulty: 'Avançado',
+    rewardMoEdu: 450,
+    requiredStarsToUnlock: 11,
+    description: 'Estudos de caso reais! Questões complexas envolvendo governança ESG, liderança ética e resolução de conflitos.',
+    quizQuestions: [
+      {
+        id: 'q7_1',
+        question: 'Na governança corporativa contemporânea, a sigla ESG (Environmental, Social and Governance) estabelece que:',
+        theme: 'Governança & ESG',
+        options: [
+          'Empresas devem mensurar seu impacto socioambiental e integridade institucional além do lucro',
+          'Critérios ambientais e sociais devem ser ignorados quando o mercado financeiro oscila',
+          'Apenas empresas estatais possuem obrigação de prestar contas à sociedade',
+          'A governança serve exclusivamente para blindar a diretoria executiva de auditorias'
+        ],
+        correctIndex: 0,
+        explanation: 'O ESG integra métricas de sustentabilidade ambiental, justiça social e governança ética à estratégia central das organizações.'
+      },
+      {
+        id: 'q7_2',
+        question: 'Ao lidar com desinformação e fake news em uma era de hiperconectividade, a postura ética do profissional diplomado exige:',
+        theme: 'Cultura Digital & Fake News',
+        options: [
+          'Checar fontes fidedignas, valorizar o método científico e combater o discurso de ódio',
+          'Compartilhar dados não verificados para gerar engajamento rápido nas redes',
+          'Confiar apenas em opiniões de fóruns anônimos sem respaldo técnico',
+          'Evitar posicionamento crítico mesmo diante de riscos claros à saúde pública'
+        ],
+        correctIndex: 0,
+        explanation: 'A responsabilidade social do universitário envolve a defesa da ciência, a verificação de fontes e o combate à desinformação.'
+      },
+      {
+        id: 'q7_3',
+        question: 'Em um projeto multidisciplinar, a liderança servidora e humanizada se caracteriza por:',
+        theme: 'Liderança & Trabalho em Equipe',
+        options: [
+          'Capacitar a equipe, ouvir ativamente e criar um ambiente de segurança psicológica',
+          'Centralizar todas as decisões e punir imediatamente qualquer sugestão divergente',
+          'Omitir o feedback para evitar conversas difíceis com os liderados',
+          'Impor metas inalcançáveis sem fornecer ferramentas de execução'
+        ],
+        correctIndex: 0,
+        explanation: 'A liderança moderna atua facilitando o desenvolvimento das pessoas, estimulando autonomia e cultivando cooperação.'
+      },
+      {
+        id: 'q7_4',
+        question: 'No planejamento de cidades inteligentes e sustentáveis, o princípio da mobilidade urbana prioriza:',
+        theme: 'Urbanismo & Mobilidade',
+        options: [
+          'Transporte público integrado, ciclovias e acessibilidade universal para pedestres',
+          'Exclusividade de investimentos para vias expressas de automóveis particulares',
+          'Eliminação de calçadas para ampliar o fluxo de caminhões pesados',
+          'Segregação geográfica das áreas residenciais em relação aos centros de trabalho'
+        ],
+        correctIndex: 0,
+        explanation: 'A mobilidade sustentável prioriza o transporte coletivo eficiente e modos ativos, garantindo equidade e menor emissão de poluentes.'
+      },
+      {
+        id: 'q7_5',
+        question: 'Ao concluir sua graduação e obter a nota máxima no ENADE, o compromisso maior do novo profissional é:',
+        theme: 'Compromisso Social & Futuro',
+        options: [
+          'Aplicar seu conhecimento técnico para gerar valor ético, inclusivo e transformador na sociedade',
+          'Guardar o diploma e não se atualizar mais ao longo da carreira',
+          'Desconsiderar os impactos sociais das suas criações e intervenções',
+          'Limitar seu aprendizado estritamente ao que foi visto na sala de aula'
+        ],
+        correctIndex: 0,
+        explanation: 'A graduação é o ponto de partida de uma jornada contínua de aprendizagem permanente, ética e contribuição social.'
+      }
+    ]
+  },
+  {
+    id: 8,
+    trackId: 'lideranca',
+    trackTitle: 'Trilha 3: Desafio Nota 5',
+    title: 'Fase 8: Super Match-3 Gabarito Nota 5',
+    subtitle: 'Combinações Épicas e Explosões em Cadeia!',
+    type: 'match3',
+    icon: '🏆',
+    difficulty: 'Avançado',
+    rewardMoEdu: 500,
+    requiredStarsToUnlock: 14,
+    description: 'Meta ambiciosa: atinja 2.200 pontos em 18 jogadas! Ative bônus em cadeia para estourar o placar.',
+    match3TargetScore: 2200,
+    match3MaxMoves: 18
+  },
+  {
+    id: 9,
+    trackId: 'lideranca',
+    trackTitle: 'Trilha 3: Desafio Nota 5',
+    title: 'Fase 9: O Grande Jackpot da Colação',
+    subtitle: 'A Roleta Dourada da Nota 5 Suprema',
     type: 'slot',
     icon: '👑',
-    rewardMoEdu: 500,
-    requiredStarsToUnlock: 9,
-    description: 'A prova final! 7 giros da sorte na máquina de alta voltagem com multiplicadores de até 10x!',
+    difficulty: 'Mestre ENADE',
+    rewardMoEdu: 800,
+    requiredStarsToUnlock: 18,
+    isBossLevel: true,
+    description: 'A prova final! 7 giros da sorte na máquina de alta voltagem com multiplicadores lendários de até 10x!',
     slotSpinsAllowed: 7,
     slotTargetMoEdu: 800
   }
@@ -213,7 +428,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     price: 300,
     type: 'avatar',
     icon: '🎓✨',
-    value: '🎓'
+    value: 'capelo'
   },
   {
     id: 'avatar_tigre_fera',
@@ -222,7 +437,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     price: 500,
     type: 'avatar',
     icon: '🐯🔥',
-    value: '🐯'
+    value: 'tiger'
   },
   {
     id: 'avatar_cientista',
@@ -231,7 +446,16 @@ export const SHOP_ITEMS: ShopItem[] = [
     price: 400,
     type: 'avatar',
     icon: '🧑‍🔬⚡',
-    value: '🧑‍🔬'
+    value: 'scientist'
+  },
+  {
+    id: 'avatar_coruja_sabedoria',
+    name: 'Coruja da Sabedoria',
+    description: 'O guardião do conhecimento supremo para mestres do ENADE.',
+    price: 650,
+    type: 'avatar',
+    icon: '🦉💎',
+    value: 'owl'
   },
   {
     id: 'title_mestre_gabarito',
@@ -259,15 +483,24 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: 'title',
     icon: '💎',
     value: 'Magnata do MoEdu'
+  },
+  {
+    id: 'title_guardiao_trilhas',
+    name: 'Título: Guardião das Trilhas',
+    description: 'Consagrado por desbravar todos os módulos acadêmicos.',
+    price: 800,
+    type: 'title',
+    icon: '🗺️',
+    value: 'Guardião das Trilhas'
   }
 ];
 
 export const MOCK_LEADERBOARD = [
-  { rank: 1, name: 'Beatriz "Gênio" Lima', moEdu: 2450, stars: 18, avatar: '🎓', title: 'Aluno Nota 5' },
-  { rank: 2, name: 'Carlos "Fera" Mendes', moEdu: 2180, stars: 17, avatar: '🐯', title: 'Mestre do Gabarito' },
-  { rank: 3, name: 'Juliana "Crânio" Rocha', moEdu: 1890, stars: 16, avatar: '🧑‍🔬', title: 'Mente Brilhante' },
-  { rank: 4, name: 'Lucas "Calculista" Dias', moEdu: 1620, stars: 14, avatar: '📚', title: 'Explorador ENADE' },
-  { rank: 5, name: 'Fernanda "Relâmpago" Silveira', moEdu: 1400, stars: 12, avatar: '⚡', title: 'Veterana' }
+  { rank: 1, name: 'Beatriz "Gênio" Lima', moEdu: 3450, stars: 27, avatar: 'capelo', title: 'Aluno Nota 5' },
+  { rank: 2, name: 'Carlos "Fera" Mendes', moEdu: 3180, stars: 25, avatar: 'tiger', title: 'Mestre do Gabarito' },
+  { rank: 3, name: 'Juliana "Crânio" Rocha', moEdu: 2890, stars: 24, avatar: 'scientist', title: 'Mente Brilhante' },
+  { rank: 4, name: 'Lucas "Calculista" Dias', moEdu: 2420, stars: 21, avatar: 'owl', title: 'Guardião das Trilhas' },
+  { rank: 5, name: 'Fernanda "Relâmpago" Silveira', moEdu: 2100, stars: 19, avatar: 'capelo', title: 'Magnata do MoEdu' }
 ];
 
 export const MATCH3_ITEMS = [
@@ -287,3 +520,4 @@ export const SLOT_SYMBOLS = [
   { id: 'trophy', name: 'Troféu Brilhante', emoji: '🏆', payout3: 150, payout2: 40, rarity: 'low', color: 'text-orange-400' },
   { id: 'coffee', name: 'Café da Madrugada', emoji: '☕', payout3: 100, payout2: 30, rarity: 'low', color: 'text-emerald-400' }
 ];
+
